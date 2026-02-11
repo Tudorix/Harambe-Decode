@@ -25,23 +25,18 @@ public class Selectioner{
     private Servo selectTop, selectBotR, selectBotL;
     private RevColorSensorV3 colorTop, colorBotR, colorBotL,colorTop2, colorBotR2, colorBotL2;
     private volatile Color resultTop, resultBotR, resultBotL;
-    private ElapsedTime brat1 = new ElapsedTime(), brat2 = new ElapsedTime(), brat3 = new ElapsedTime();
-    private ElapsedTime shootingTime = new ElapsedTime();
-    private Thread thread = null;
     public boolean ballsfull = true;
     private Telemetry telemetry;
-    private volatile boolean isRunning = true, live = false;
-    int brat1up, brat2up, brat3up, greenPos=-1, target = 1;
-    public boolean shootingThreeBalls = false;
+    int brat1up, brat2up, brat3up;
 
     public Selectioner(HardwareClass hardwareClass, Telemetry telemetry) {
-        selectTop = hardwareClass.selectTop;   //1
-        selectBotL = hardwareClass.selectBotL; //2
-        selectBotR = hardwareClass.selectBotR; //3
+        selectTop = hardwareClass.selectTop;   // 1
+        selectBotL = hardwareClass.selectBotL; // 2
+        selectBotR = hardwareClass.selectBotR; // 3
 
-        colorTop = hardwareClass.colorTop;     // 1
-        colorBotL = hardwareClass.colorBotL;   // 2
-        colorBotR = hardwareClass.colorBotR;   // 3
+        colorTop = hardwareClass.colorTop;       // 1
+        colorBotL = hardwareClass.colorBotL;     // 2
+        colorBotR = hardwareClass.colorBotR;     // 3
 
         colorTop2 = hardwareClass.colorTop2;     // 1
         colorBotR2 = hardwareClass.colorBotR2;   // 2
@@ -49,132 +44,13 @@ public class Selectioner{
 
         this.telemetry = telemetry;
     }
-    /*
-    public void start() {
-        isRunning = true;
-        init();
 
-        if (thread == null || !thread.isAlive()) {
-            thread = new Thread(() -> {
-                while (isRunning && !Thread.currentThread().isInterrupted()) {
-
-                    if (!shootingThreeBalls) {
-                        resultTop = Color.getColor2C(
-                                colorTop.red(), colorTop.green(), colorTop.blue(), colorTop.alpha(),
-                                colorTop2.red(), colorTop2.green(), colorTop2.blue(), colorTop2.alpha());
-
-                        resultBotL = Color.getColor2C(
-                                colorBotL.red(), colorBotL.green(), colorBotL.blue(), colorBotL.alpha(),
-                                colorBotL2.red(), colorBotL2.green(), colorBotL2.blue(), colorBotL2.alpha());
-
-                        resultBotR = Color.getColor2C(
-                                colorBotR.red(), colorBotR.green(), colorBotR.blue(), colorBotR.alpha(),
-                                colorBotR2.red(), colorBotR2.green(), colorBotR2.blue(), colorBotR2.alpha());
-                    }
-
-                    if (shootingThreeBalls) {
-                        handleShooting();
-                    }
-
-                    ballsfull = (resultTop != Color.INVALID && resultBotL != Color.INVALID && resultBotR != Color.INVALID);
-                    checkTimer();
-                    sleep(40);
-                }
-
-            });
-            thread.start();
-        }
-    }
-
-     */
-
-    private void handleShooting() {
-
-        if (shootingTime.seconds() > 2) {
-            shootingThreeBalls = false;
-            target = 1;
-            return;
-        }
-        if (live) return;  //asteapta servouri
-        boolean shouldShootGreen = (greenPos == target);
-
-        if (shouldShootGreen) {
-            shootGreen();
-        } else {
-            shootPurple();
-        }
-
-        if (!live) { //trage surplus
-            if (shouldShootGreen) {
-                shootPurple();
-            } else {
-                shootGreen();
-            }
-        }
-
-        target++;
-        if (target > 3) {
-            shootingThreeBalls = false;
-            target = 1;
-        }
-    }
-
-
-    void checkTimer(){  //checks servos
-        if(brat1.milliseconds()>HardwareClass.bratDelay && brat1up == 1) {
-            selectTop.setPosition(HardwareClass.selectTopREST);
-            sleep(HardwareClass.bratDownDelay);
-            brat1up=2;
-            live = false;
-        }
-        if(brat2.milliseconds()>HardwareClass.bratDelay && brat2up == 1) {
-            selectBotL.setPosition(HardwareClass.selectBotLREST);
-            sleep(HardwareClass.bratDownDelay);
-            brat2up=2;
-            live = false;
-        }
-        if(brat3.milliseconds()>HardwareClass.bratDelay && brat3up == 1) {
-            selectBotR.setPosition(HardwareClass.selectBotRREST);
-            sleep(HardwareClass.bratDownDelay);
-            brat3up=2;
-            live = false;
-        }
-        if(brat1up == 2 && brat2up == 2 && brat3up == 2){
-            selectTop.setPosition(HardwareClass.selectTopLOW);
-            selectBotL.setPosition(HardwareClass.selectBotLLOW);
-            selectBotR.setPosition(HardwareClass.selectBotRLOW);
-            brat1up=0;
-            brat2up=0;
-            brat3up=0;
-        }
-    }
-
-    public void resetBrat(){  //resets servos
-        selectTop.setPosition(HardwareClass.selectTopLOW);
-        selectBotL.setPosition(HardwareClass.selectBotLLOW);
-        selectBotR.setPosition(HardwareClass.selectBotRLOW);
-        brat1up=0;
-        brat2up=0;
-        brat3up=0;
-    }
-
-    public void shoot3Balls() {
-        shootingThreeBalls = true;
-        shootingTime.reset();
-        target = 1;
-    }
 
     public void printesaDinDubai(int pos){  //deprecated way of shooting
         if(pos<0) {
             unloadBalls();
             return;
         }
-        if(pos==1) shootGreen(); else shootPurple();
-        sleep(HardwareClass.bratDelay + 300);
-        if(pos==2) shootGreen(); else shootPurple();
-        sleep(HardwareClass.bratDelay + 300);
-        if(pos==3) shootGreen(); else shootPurple();// doublecheck pentru surplus!!!!
-        sleep(HardwareClass.bratDelay + 300);
     }
 
     public void unloadBalls(){  //
@@ -194,51 +70,51 @@ public class Selectioner{
         sleep(200);
     }
 
-
-
-    public void rightServoUp(){
-        brat3.reset();
-        brat3up = 1;
-        selectBotR.setPosition(HardwareClass.selectBotRHIGH);
-    }
-
-    public void leftServoUp(){
-        brat2.reset();
-        brat2up = 1;
-        selectBotL.setPosition(HardwareClass.selectBotLHIGH);
+    public int getOrder(){
+        return 0;                   ////
     }
 
     public void topServoUp() {
-        brat1.reset();
-        brat1up = 1;
         selectTop.setPosition(HardwareClass.selectTopHIGH);
-    }
-    public void shootPurple() {
-        live = true;
-        if(resultTop == Color.PURPLE) {
-            resultTop = Color.INVALID;
-            topServoUp();
-        } else if(resultBotL == Color.PURPLE) {
-            resultBotL = Color.INVALID;
-            leftServoUp();
-        } else if(resultBotR == Color.PURPLE) {
-            resultBotR = Color.INVALID;
-            rightServoUp();
-        } else live = false;
+        brat1up = 1;
+        sleep(HardwareClass.bratDelay);
+        selectTop.setPosition(HardwareClass.selectTopREST);
     }
 
-    public void shootGreen() {
-        live = true;
+    public void leftServoUp(){
+        selectBotL.setPosition(HardwareClass.selectTopHIGH);
+        brat2up = 1;
+        sleep(HardwareClass.bratDelay);
+        selectBotL.setPosition(HardwareClass.selectTopREST);
+    }
+
+    public void rightServoUp(){
+        selectBotR.setPosition(HardwareClass.selectTopHIGH);
+        brat3up = 1;
+        sleep(HardwareClass.bratDelay);
+        selectBotR.setPosition(HardwareClass.selectTopREST);
+    }
+
+    public int getPurplePos() {
+        if(resultTop == Color.PURPLE) {
+            return 1;
+        } else if(resultBotL == Color.PURPLE) {
+            return 2;
+        } else if(resultBotR == Color.PURPLE) {
+            return 3;
+        }
+        return -1;
+    }
+
+    public int getGreenPos() {
         if(resultTop == Color.GREEN) {
-            resultTop = Color.INVALID;
-            topServoUp();
+            return 1;
         } else if(resultBotL == Color.GREEN) {
-            resultBotL = Color.INVALID;
-            leftServoUp();
+            return 2;
         } else if(resultBotR == Color.GREEN) {
-            resultBotR = Color.INVALID;
-            rightServoUp();
-        } else live = false;
+            return 3;
+        }
+        return -1;
     }
 
     public void telemetry() {
@@ -268,34 +144,6 @@ public class Selectioner{
         resultBotR= Color.getColor2C(colorBotR.red(),colorBotR.green(),colorBotR.blue(),colorBotR.alpha(),colorBotR2.red(),colorBotR2.green(),colorBotR2.blue(),colorBotR2.alpha());
     }
 
-    public void init(){
-        selectBotR.setDirection(Servo.Direction.FORWARD);
-        selectBotL.setDirection(Servo.Direction.FORWARD);
-        selectBotR.setPosition(HardwareClass.selectBotRLOW);
-        selectBotL.setPosition(HardwareClass.selectBotLLOW);
-        selectTop.setPosition(HardwareClass.selectTopLOW);
-    }
-
-
-    public void setObeliskColors(int pos) {  //must be run on start of opMode, runs unload if not set
-        greenPos = pos;
-    }
-
-    public void stop() {
-        isRunning = false;
-        if (thread != null) {
-            thread.interrupt();
-            thread = null;
-        }
-    }
-
-
-    public void pause(){
-        isRunning = false;
-    }
-    public void aladam(){
-        isRunning = true;
-    }
 
     public void sleep(int sec){
         try {

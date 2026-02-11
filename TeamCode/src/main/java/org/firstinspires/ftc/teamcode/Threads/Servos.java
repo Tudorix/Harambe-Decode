@@ -50,6 +50,15 @@ public class Servos {
         double deltaAngle = ((double)angle/24.0)*-0.5+0.85;
         angleServo.setPosition(deltaAngle);
     }
+
+    public void sleep(int sec){
+        try {
+            Thread.sleep(sec);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     public static synchronized Servos getInstance(HardwareMap hardwareMap , Telemetry telemetry ){
         if(single_instance == null){
             single_instance = new Servos(HardwareClass.getInstance(hardwareMap), telemetry , hardwareMap);
