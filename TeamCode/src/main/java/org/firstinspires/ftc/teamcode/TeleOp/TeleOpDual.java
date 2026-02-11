@@ -38,11 +38,11 @@
         boolean override = false;
         double targetPosition, targetAngle, target;
 
-        double threshold = 0.75;
+        double threshold = 0.70; // To Adjust
         private Follower follower;
         private TelemetryManager telemetryM;
 
-        String mode = "Drive";
+        String mode = "drive";
         @Override
         public void runOpMode()  {
             //Init phase
@@ -57,7 +57,7 @@
             holonomic = Holonomic.getInstance(hardwareMap , gamepad1, gamepad2);
             limelight = Limelight.getInstance(hardwareMap,telemetry);
             selectioner = Selectioner.getInstance(hardwareClass, telemetry);
-            turret = Turret.getInstance(hardwareMap,telemetry);
+            //turret = Turret.getInstance(hardwareMap,telemetry);
 
             hardwareClass.FL.setDirection(DcMotorSimple.Direction.REVERSE);
             hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -65,9 +65,12 @@
 
             waitForStart();
 
+            /*
             if(!turret.getStatus()){
                 turret.setup();
             }
+            */
+
 
             limelight.setPipeline(1);
             limelight.setup();
@@ -94,11 +97,22 @@
                             mode = "shoot";
                         }
 
+                        if(gamepad1.right_trigger > 0){
+                            motors.intakeOn();
+                        }
+                        else if(gamepad1.right_trigger <= 0){
+                            motors.intakeOff();
+                        }
+
                         break;
                     }
                     case "shoot":{
                         if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
-                            selectioner.printesaDinDubai(-1);
+                            selectioner.unloadBallsQuick();
+                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                            motors.setCoefsMan(20,0,0,1.2);
+                            motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
+                            selectioner.resetServos();
                             mode = "drive";
                         }
                         break;

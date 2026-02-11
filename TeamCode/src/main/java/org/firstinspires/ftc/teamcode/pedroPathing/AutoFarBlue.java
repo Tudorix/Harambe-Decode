@@ -194,7 +194,7 @@ public class AutoFarBlue extends OpMode {
                 if(!follower.isBusy()) {
                     if(pathTimer.getElapsedTimeSeconds()>1) {
                         PoseStorage.autoPose = follower.getPose();
-                        selectioner.stop();
+                        //selectioner.stop();
                         setPathState(-1);
                         motors.rampStop();
                     }
@@ -245,9 +245,7 @@ public class AutoFarBlue extends OpMode {
         hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
         hardwareClass.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        selectioner.init();
-        selectioner.start();
-        selectioner.aladam();
+
         servos.hoodMove(1);
         follower.setStartingPose(startPose);
         motors.setRampCoefs();
@@ -321,7 +319,7 @@ public class AutoFarBlue extends OpMode {
     }
     @Override
     public void stop() {
-        selectioner.stop();
+        //selectioner.stop();
     }
 
 

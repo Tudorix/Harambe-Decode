@@ -76,8 +76,7 @@
                 holonomic.start();
             }
             servos.hoodMove(10);
-            selectioner.aladam();
-            selectioner.init();
+
 
 
             while(opModeIsActive()) {
@@ -112,7 +111,7 @@
 
                 if (gamepad1.right_trigger > 0.23 && !selectioner.ballsfull) {
                     motors.intakeOn();
-                    selectioner.resetBrat();
+                    //selectioner.resetBrat();
                 }
                 else if(gamepad1.left_trigger>0.23 || selectioner.ballsfull && !reset) {
                     motors.intakeReverse();
@@ -179,7 +178,7 @@
                     selectioner.printesaDinDubai((pos));
                 }
                 if(gamepad1.dpad_down){
-                    selectioner.resetBrat();
+                   // selectioner.resetBrat();
                 }
                 if(gamepad1.share)
                     override = false;
@@ -208,11 +207,11 @@
                 telemetryM.update();
                 telemetry.update();
                 if(isStopRequested()) {
-                    selectioner.stop();
+                   // selectioner.stop();
                 }
                 setObelisk(); //hoara is my passion
             }
-            selectioner.stop();
+            //selectioner.stop();
         }
 
         public void handleTurret() {

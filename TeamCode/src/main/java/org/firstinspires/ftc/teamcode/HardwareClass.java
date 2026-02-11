@@ -30,7 +30,7 @@ public class HardwareClass {
     public static double blueX = -57, blueY = -57;
     public static double blueScoreX = -65, blueScoreY = -65;
 
-    public static int bratDelay = 250,bratDownDelay = 150; // milisecunde
+    public static int bratDelay = 200,bratDownDelay = 150; // milisecunde
 
     public static  double selectTopLOW = 0.86, selectBotLLOW = 0.9,selectBotRLOW =0.95 ;//0.14
 

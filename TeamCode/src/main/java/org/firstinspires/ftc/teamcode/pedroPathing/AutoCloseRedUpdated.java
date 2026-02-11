@@ -380,9 +380,7 @@ public class AutoCloseRedUpdated extends OpMode {
         hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
         hardwareClass.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        selectioner.init();
-        selectioner.start();
-        selectioner.aladam();
+
         servos.hoodMove(1);
         follower.setStartingPose(startPose);
         motors.setRampCoefs();
@@ -480,7 +478,7 @@ public class AutoCloseRedUpdated extends OpMode {
 
     @Override
     public void stop() {
-        selectioner.stop();
+
     }
 
 
