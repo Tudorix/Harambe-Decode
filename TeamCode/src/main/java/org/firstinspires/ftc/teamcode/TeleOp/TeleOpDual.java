@@ -38,7 +38,7 @@
         boolean override = false;
         double targetPosition, targetAngle, target;
 
-        double threshold = 0.70; // To Adjust
+        double threshold = 0.71; // To Adjust
         private Follower follower;
         private TelemetryManager telemetryM;
 
@@ -101,6 +101,13 @@
                             motors.intakeOn();
                         }
                         else if(gamepad1.right_trigger <= 0){
+                            motors.intakeOff();
+                        }
+
+                        if(gamepad1.left_trigger > 0){
+                            motors.intakeReverse();
+                        }
+                        else if(gamepad1.left_trigger <= 0){
                             motors.intakeOff();
                         }
 
