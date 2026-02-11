@@ -15,4 +15,3 @@ TeleOp:
 -Vede cazul (Limelight)
 -Apeleaza individual toate SERVIICILE prin functii
 -Modifica parametrii in THREADURI (get/set)
-

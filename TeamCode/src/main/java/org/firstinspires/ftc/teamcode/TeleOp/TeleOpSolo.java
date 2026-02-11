@@ -78,7 +78,6 @@
             servos.hoodMove(10);
             selectioner.aladam();
             selectioner.init();
-            selectioner.start();
 
 
             while(opModeIsActive()) {
@@ -267,7 +266,6 @@
 
             //selectioner.setObeliskColors(obeliskColors);
         }
-
 
         public double convertToNewRange(double value,
                                         double oldMin, double oldMax,
