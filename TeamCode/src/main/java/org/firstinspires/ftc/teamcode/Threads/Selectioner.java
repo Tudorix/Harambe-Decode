@@ -49,7 +49,7 @@ public class Selectioner{
 
         this.telemetry = telemetry;
     }
-
+    /*
     public void start() {
         isRunning = true;
         init();
@@ -85,6 +85,8 @@ public class Selectioner{
             thread.start();
         }
     }
+
+     */
 
     private void handleShooting() {
 

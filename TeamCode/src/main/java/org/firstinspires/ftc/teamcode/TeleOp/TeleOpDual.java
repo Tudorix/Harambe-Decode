@@ -24,7 +24,7 @@
     //comment
 
 
-    @TeleOp(name="TeleOp Uno", group = "Solo")
+    @TeleOp(name="TeleOp Pisica din dubai", group = "Solo")
     public class TeleOpDual extends LinearOpMode {
         Servos servos = null;
         HardwareClass hardwareClass = null;
@@ -32,6 +32,8 @@
         Motors motors = null;
         Limelight limelight = null;
         Selectioner selectioner = null;
+
+        double threshold = 0.75;
         private Follower follower;
         private TelemetryManager telemetryM;
         @Override
@@ -66,9 +68,37 @@
             selectioner.init();
             selectioner.start();
 
-
+            double distance = -1;
             while(opModeIsActive()) {
+                if(gamepad1.left_bumper){
+                    distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                    motors.setCoefsMan(20,0,0,1.2);
+                    motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
+                }
 
+                if(gamepad1.right_bumper){
+                    distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                    motors.setCoefsMan(60,0,0,1.2);
+                    motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
+                }
+
+                if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
+                    selectioner.printesaDinDubai(-1);
+                }
             }
+        }
+        static int getRPM(double d) {
+            double r = 0.012 * d * d - 1.9 * d + 2070;
+            r = Math.max(Math.min(r,3000),100);
+            return (int)r;
+        }
+
+        static double getHood(double d) {
+            if (d < 130)
+                return (d - 100) * (9.0 / 30.0);
+            else if (d < 170)
+                return 9 - (d - 130) * (1.0 / 40.0);
+            else
+                return 6 + (d - 170) * (5.0 / 150.0);
         }
     }

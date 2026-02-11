@@ -17,6 +17,8 @@ public class Motors {
 
     private static Motors instance;
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(39,0,0,1.2 ); //+- 20rpm close
+    public static PIDFCoefficients PID_FAST = new PIDFCoefficients(60,0,0,1.2 ); //+- 20rpm close
+    public static PIDFCoefficients PID_STEADY = new PIDFCoefficients(20,0,0,1.2 ); //+- 20rpm close
     private Motors(HardwareClass hw) {
         ramp = hw.ramp;
         ramp2 = hw.ramp2;
