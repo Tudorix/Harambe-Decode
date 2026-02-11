@@ -9,16 +9,11 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 import java.util.concurrent.ForkJoinPool;
 
 public class Servos {
-
-    //Declarations
     private HardwareClass hardwareClass;
-
-    //Singleton
     private Servo angleServo, turret1, turret2;
     private static Servos single_instance = null;
-    private boolean running = false;
-    Thread thread = null;
     private double medianError = -1;
+
     public Servos(HardwareClass hardwareClass, Telemetry telemetry , HardwareMap hardwareMap){
         this.hardwareClass = hardwareClass;
         this.angleServo = hardwareClass.angle;
@@ -26,7 +21,6 @@ public class Servos {
         this.turret2 = hardwareClass.turret2;
         turret1.setDirection(Servo.Direction.FORWARD);
         turret2.setDirection(Servo.Direction.FORWARD);
-        //init();
     }
 
     public void turretGT(double pos){
@@ -55,25 +49,6 @@ public class Servos {
         if(angle<0)angle = 0;
         double deltaAngle = ((double)angle/24.0)*-0.5+0.85;
         angleServo.setPosition(deltaAngle);
-    }
-    public void resume(){
-        running = true;
-    }
-
-    public void stop(){
-        running = false;
-    }
-
-    public boolean getStatus(){
-        return running;
-    }
-
-    public void wait(int sec){
-        try {
-            Thread.sleep(sec);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
     public static synchronized Servos getInstance(HardwareMap hardwareMap , Telemetry telemetry ){
         if(single_instance == null){

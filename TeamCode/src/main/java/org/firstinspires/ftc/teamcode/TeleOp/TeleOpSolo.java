@@ -1,7 +1,5 @@
     package org.firstinspires.ftc.teamcode.TeleOp;
 
-    import android.app.slice.SliceMetrics;
-
     import com.bylazar.telemetry.PanelsTelemetry;
     import com.bylazar.telemetry.TelemetryManager;
     import com.pedropathing.follower.Follower;
@@ -13,7 +11,7 @@
 
     import org.firstinspires.ftc.teamcode.HardwareClass;
     import org.firstinspires.ftc.teamcode.Threads.Holonomic;
-    import org.firstinspires.ftc.teamcode.Threads.Localization;
+    import org.firstinspires.ftc.teamcode.Threads.Limelight;
     import org.firstinspires.ftc.teamcode.Threads.Selectioner;
     import org.firstinspires.ftc.teamcode.Threads.Servos;
     import org.firstinspires.ftc.teamcode.Threads.Motors;
@@ -22,7 +20,6 @@
     import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
     import java.util.ArrayList;
-    import java.util.Optional;
 
     //comment
 
@@ -33,7 +30,7 @@
         HardwareClass hardwareClass = null;
         Holonomic holonomic = null;
         Motors motors = null;
-        Localization localization = null;
+        Limelight limelight = null;
         Selectioner selectioner = null;
         boolean rampUp = false;
 
@@ -60,7 +57,7 @@
             motors = Motors.getInstance(hardwareMap);
             hardwareClass = HardwareClass.getInstance(hardwareMap);
             holonomic = Holonomic.getInstance(hardwareMap , gamepad1, gamepad2);
-            localization = Localization.getInstance(hardwareMap,telemetry);
+            limelight = Limelight.getInstance(hardwareMap,telemetry);
             selectioner = Selectioner.getInstance(hardwareClass, telemetry);
             hardwareClass.FL.setDirection(DcMotorSimple.Direction.REVERSE);
             hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -69,10 +66,10 @@
             //selectioner.setObeliskColors(obeliskColors);
             waitForStart();
 
-            localization.setPipeline(1);
+            limelight.setPipeline(1);
 
-            localization.setup();
-            localization.start();
+            limelight.setup();
+            limelight.start();
             follower.startTeleopDrive();
 
             if(!holonomic.getStatus()){
@@ -88,13 +85,13 @@
                 if(time.seconds()>2)
                     reset = true;
                 if(greenPos==-1)
-                    greenPos = localization.checkApriltagResults();
-                if(greenPos!=-1 && localization.getStatus()) {
-                    localization.stop();
+                    greenPos = limelight.checkApriltagResults();
+                if(greenPos!=-1 && limelight.getStatus()) {
+                    limelight.stop();
                     target = 0;
-                    localization.setPipeline(4);
+                    limelight.setPipeline(4);
                 }
-                double distance = localization.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),target);
+                double distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),target);
                 if(Math.abs(motors.getRampError((int)getRPM(distance)))-50<50 && !gamepad1.isRumbling())
                     gamepad1.rumble(150);
                 telemetry.clearAll();
@@ -106,12 +103,12 @@
 
                 if(gamepad1.right_stick_button){
                     target=0;
-                    localization.setPipeline(4);
+                    limelight.setPipeline(4);
                 }
 
                 if(gamepad1.left_stick_button){
                     target=1;
-                    localization.setPipeline(0);
+                    limelight.setPipeline(0);
                 }
 
                 if (gamepad1.right_trigger > 0.23 && !selectioner.ballsfull) {
@@ -204,7 +201,7 @@
                 telemetry.addData("Distance to target: ", distance);
                 telemetry.addData("Target:",targetPosition);
                 telemetry.addData("TargetAngle:",targetAngle);
-                telemetry.addData("Tx:",localization.getXPos());
+                telemetry.addData("Tx:", limelight.getXPos());
                 telemetry.addData("Robot Velocity:",follower.getVelocity().getMagnitude()*0.0254);
                 if(override)
                     telemetry.addLine("!!!! SPEED OVERRIDE !!!!");
@@ -252,8 +249,8 @@
                 -Math.PI / 2, Math.PI / 2,
                 0.15, 0.85
         );
-            if(localization.checkResults())
-               targetPosition+=(localization.getXPos()*0.002);
+            if(limelight.checkResults())
+               targetPosition+=(limelight.getXPos()*0.002);
             targetPosition = Math.min(Math.max(targetPosition,0.25),0.75);
             servos.turretGT(targetPosition);
         }
@@ -283,6 +280,7 @@
             r = Math.max(Math.min(r,3000),100);
             return r;
         }
+
         static double getHood(double d) {
             if (d < 130)
                 return (d - 100) * (9.0 / 30.0);

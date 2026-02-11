@@ -13,33 +13,16 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 public class Motors {
 
     private DcMotorEx ramp,ramp2;
-    private DcMotorEx turret;
     private DcMotor intakeMotor;
 
     private static Motors instance;
-
-    private boolean hasTarget = false;
-    private double tx = 0.0; // eroare unghiulara (grade)
-
-    private static final double kP = 0.01;
-    private static final double MAX_POWER = 0.5;
-
-    private static final double MAX_ANGLE_DEG =480;
-
-    private final double TICKS_PER_DEGREE = 0.069; //0.069
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(39,0,0,1.2 ); //+- 20rpm close
-    ElapsedTime lost = new ElapsedTime();
-
     private Motors(HardwareClass hw) {
         ramp = hw.ramp;
         ramp2 = hw.ramp2;
         intakeMotor = hw.intakeMotor;
 
         ramp2.setDirection(DcMotorSimple.Direction.REVERSE);
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
     }
 
     public void intakeOn() {

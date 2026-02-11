@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
 import org.firstinspires.ftc.teamcode.Threads.Selectioner;
-import org.firstinspires.ftc.teamcode.Threads.Localization;
+import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -45,7 +45,7 @@ public class AutoCloseBlueUpdated extends OpMode {
     private final ElapsedTime delay = new ElapsedTime();
     Servos servos = null;
     Motors motors = null;
-    Localization localization = null;
+    Limelight limelight = null;
     Selectioner selectioner = null;
     HardwareClass hardwareClass= null;
     private TelemetryManager telemetryM;
@@ -346,7 +346,7 @@ public class AutoCloseBlueUpdated extends OpMode {
     public void loop() {
         follower.update();
         autonomousPathUpdate();
-        distance = localization.getDistanceOD(
+        distance = limelight.getDistanceOD(
                 follower.getPose().getX(),
                 follower.getPose().getY(),
                 target
@@ -370,9 +370,9 @@ public class AutoCloseBlueUpdated extends OpMode {
         hardwareClass = HardwareClass.getInstance(hardwareMap);
         servos = Servos.getInstance(hardwareMap,telemetry);
         motors = Motors.getInstance(hardwareMap);
-        localization = Localization.getInstance(hardwareMap,telemetry);
-        localization.setup();
-        localization.setPipeline(1);
+        limelight = Limelight.getInstance(hardwareMap,telemetry);
+        limelight.setup();
+        limelight.setPipeline(1);
         selectioner = Selectioner.getInstance(hardwareClass,telemetry);
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
@@ -386,7 +386,7 @@ public class AutoCloseBlueUpdated extends OpMode {
         servos.hoodMove(1);
         follower.setStartingPose(startPose);
         motors.setRampCoefs();
-        distance = localization.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),target);
+        distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),target);
     }
 
 
@@ -452,8 +452,8 @@ public class AutoCloseBlueUpdated extends OpMode {
                 Math.PI / 2, -Math.PI / 2,
                 0.2, 0.8
         );
-        if(localization.checkResults())
-            targetPosition+=(localization.getXPos()*0.0014);
+        if(limelight.checkResults())
+            targetPosition+=(limelight.getXPos()*0.0014);
         targetPosition = Math.min(Math.max(targetPosition,0.28),0.72);
         servos.turretGT(targetPosition);
 

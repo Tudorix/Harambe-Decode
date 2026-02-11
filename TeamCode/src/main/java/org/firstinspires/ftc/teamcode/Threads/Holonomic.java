@@ -10,14 +10,13 @@ import org.firstinspires.ftc.teamcode.HardwareClass;
 public class Holonomic {
 
     //Declarations
-    private final ElapsedTime forwardTimer = new ElapsedTime();
     DcMotor FR , FL , BL , BR;
     Gamepad gm, gm2;
 
     float decl = 1;
 
     private double BLPower , BRPower , FRPower , FLPower, totalPower = 0;
-    private double power , turn, turnLow , max , x , y;
+    private double power , turn, max , x , y;
     private double sin , cos , theta;
 
     //Singleton

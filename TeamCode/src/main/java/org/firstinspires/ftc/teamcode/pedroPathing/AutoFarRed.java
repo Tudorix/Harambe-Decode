@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
 import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
-import org.firstinspires.ftc.teamcode.Threads.Localization;
+import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.HardwareClass;
@@ -40,7 +40,7 @@ public class AutoFarRed extends OpMode {
     Servos servos = null;
     private TelemetryManager telemetryM;
     Motors motors = null;
-    Localization localization = null;
+    Limelight limelight = null;
     Selectioner selectioner = null;
     HardwareClass hardwareClass = null;
 
@@ -236,7 +236,7 @@ public class AutoFarRed extends OpMode {
         hardwareClass = HardwareClass.getInstance(hardwareMap);
         servos = Servos.getInstance(hardwareMap,telemetry);
         motors = Motors.getInstance(hardwareMap);
-        localization = Localization.getInstance(hardwareMap,telemetry);
+        limelight = Limelight.getInstance(hardwareMap,telemetry);
         selectioner =Selectioner.getInstance(hardwareClass,telemetry);
         follower = Constants.createFollower(hardwareMap);
         buildPaths();

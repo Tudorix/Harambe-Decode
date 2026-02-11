@@ -5,14 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Threads.Localization;
+import org.firstinspires.ftc.teamcode.Threads.Limelight;
 
 @TeleOp
 @Config
 public class ServoTuning extends OpMode {
 
     public Servo servo = null;
-    Localization localization = null;
+    Limelight limelight = null;
     public static String servoName = "";
     public static double Position = 0;
 

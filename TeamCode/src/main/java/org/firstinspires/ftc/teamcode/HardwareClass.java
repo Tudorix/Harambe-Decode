@@ -24,30 +24,19 @@ public class HardwareClass {
     public Servo selectTop, selectBotR, selectBotL,turret1,turret2;
     public RevColorSensorV3 colorTop, colorBotR, colorBotL; //selection sensors
     public RevColorSensorV3 colorTop2, colorBotR2, colorBotL2;
+    public static double startX = 64 ,startY = 0, startAngle=180;//Inch
+    public static double redX = -57, redY = 57;
+    public static double redScoreX = -65, redScoreY = 65;       //65   62
+    public static double blueX = -57, blueY = -57;
+    public static double blueScoreX = -65, blueScoreY = -65;
 
-
-        public static double startX = 64 ,startY = 0, startAngle=180;//Inch
-        public static double redX = -57, redY = 57;
-        public static double redScoreX = -65, redScoreY = 65;       //65   62
-
-        public static double blueX = -57, blueY = -57;
-        public static double blueScoreX = -65, blueScoreY = -65;
-    //Motor values
-    public static double height = 0.75,robotHeight = 0.27;
-
-    public static double limelightMountAngle = 25;
-
-    public static int bratDelay = 250; // milisecunde
+    public static int bratDelay = 250,bratDownDelay = 150; // milisecunde
 
     public static  double selectTopLOW = 0.86, selectBotLLOW = 0.9,selectBotRLOW =0.95 ;//0.14
 
     public static  double selectTopREST = 0.7, selectBotLREST = 0.74,selectBotRREST =0.80 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
 
     public static  double selectTopHIGH = 0.45, selectBotLHIGH = 0.5,selectBotRHIGH = 0.54;//0.57
-
-    public static double colorSensorDistance = 4.0; // CM
-
-    public static double turretGearRatio = 0.239382242524709, turretMotorGearRatio = 0.270270270;
 
 
 

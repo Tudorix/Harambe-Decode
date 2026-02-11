@@ -1,32 +1,22 @@
 package org.firstinspires.ftc.teamcode.Threads;
 
-import android.health.connect.datatypes.BasalBodyTemperatureRecord;
-
-import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.HardwareClass;
-import org.firstinspires.ftc.teamcode.Threads.Motors;
-
-import java.util.List;
-import java.util.Objects;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 
-public class Localization {
+public class Limelight {
     Thread thread = null;
-    private static Localization single_instance = null;
+    private static Limelight single_instance = null;
     private boolean running = false;
     public double distance;
     public int pipeline = -1;
     private Limelight3A limelight;
     double Tx, Ty;
-    public Localization(HardwareClass hardwareClass, Telemetry telemetry , HardwareMap hardwareMap){
+    public Limelight(HardwareClass hardwareClass, Telemetry telemetry , HardwareMap hardwareMap){
         limelight = hardwareMap.get(Limelight3A.class, "Ethernet Device");
         telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(0);
@@ -98,37 +88,9 @@ public class Localization {
         return distance * 2.54;
     }
 
-    public double getRobotAngle(double x, double y, int target){
-        if(target == 0)
-            return Math.atan2(Math.abs(HardwareClass.redY-y),Math.abs(HardwareClass.redX-x));
-        return Math.atan2(Math.abs(HardwareClass.blueY-y),Math.abs(HardwareClass.blueY-x));
-    }
-
-    public double getRPM(double d) {
-        double r = 0.012 * d * d - 1.9 * d + 2070;
-        r = Math.max(Math.min(r,3000),100);
-        return r;
-    }
-    public double getHood(double d) {
-        if (d < 130)
-            return (d - 100) * (9.0 / 30.0);
-        else if (d < 170)
-            return 9 - (d - 130) * (1.0 / 40.0);
-        else
-            return 6 + (d - 170) * (5.0 / 150.0);
-    }
-
 
     public void setPipeline(int pipe){
         limelight.pipelineSwitch(pipe);
-    }
-
-    public void wait(int sec){
-        try {
-            Thread.sleep(sec);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public void stop(){
@@ -140,9 +102,9 @@ public class Localization {
     public boolean getStatus() {
         return running;
     }
-    public static synchronized Localization getInstance(HardwareMap hardwareMap , Telemetry telemetry ){
+    public static synchronized Limelight getInstance(HardwareMap hardwareMap , Telemetry telemetry ){
         if(single_instance == null){
-            single_instance = new Localization(HardwareClass.getInstance(hardwareMap), telemetry, hardwareMap);
+            single_instance = new Limelight(HardwareClass.getInstance(hardwareMap), telemetry, hardwareMap);
         }
         return single_instance;
     }

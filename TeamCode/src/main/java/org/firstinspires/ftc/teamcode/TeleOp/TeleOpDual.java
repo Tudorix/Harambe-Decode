@@ -11,7 +11,7 @@
 
     import org.firstinspires.ftc.teamcode.HardwareClass;
     import org.firstinspires.ftc.teamcode.Threads.Holonomic;
-    import org.firstinspires.ftc.teamcode.Threads.Localization;
+    import org.firstinspires.ftc.teamcode.Threads.Limelight;
     import org.firstinspires.ftc.teamcode.Threads.Motors;
     import org.firstinspires.ftc.teamcode.Threads.Selectioner;
     import org.firstinspires.ftc.teamcode.Threads.Servos;
@@ -30,16 +30,10 @@
         HardwareClass hardwareClass = null;
         Holonomic holonomic = null;
         Motors motors = null;
-        Localization localization = null;
+        Limelight limelight = null;
         Selectioner selectioner = null;
         private Follower follower;
-
-        public static Pose startingPose = new Pose(HardwareClass.startX,HardwareClass.startY,Math.toRadians(HardwareClass.startAngle));
-        ArrayList<Color> obeliskColors = new ArrayList<>();
-        ElapsedTime time = new ElapsedTime();
-
         private TelemetryManager telemetryM;
-        //private final ElapsedTime checkLimelight = new ElapsedTime();
         @Override
         public void runOpMode()  {
             //Init phase
@@ -52,28 +46,23 @@
             motors = Motors.getInstance(hardwareMap);
             hardwareClass = HardwareClass.getInstance(hardwareMap);
             holonomic = Holonomic.getInstance(hardwareMap , gamepad1, gamepad2);
-            localization = Localization.getInstance(hardwareMap,telemetry);
+            limelight = Limelight.getInstance(hardwareMap,telemetry);
             selectioner = Selectioner.getInstance(hardwareClass, telemetry);
 
             hardwareClass.FL.setDirection(DcMotorSimple.Direction.REVERSE);
             hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
-            ElapsedTime timer = new ElapsedTime();
             motors.setRampCoefs();
-            //selectioner.setObeliskColors(obeliskColors[0]);
 
             waitForStart();
 
-            localization.setPipeline(1);
-            localization.setup();
-            localization.start();
-            //follower.startTeleopDrive();
+            limelight.setPipeline(1);
+            limelight.setup();
+            limelight.start();
 
             if(!holonomic.getStatus()){
                 holonomic.start();
             }
 
-            servos.hoodMove(10);
-            selectioner.aladam();
             selectioner.init();
             selectioner.start();
 

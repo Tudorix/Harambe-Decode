@@ -24,13 +24,13 @@ public class Selectioner{
     private static Selectioner selectionerInstance = null;
     private Servo selectTop, selectBotR, selectBotL;
     private RevColorSensorV3 colorTop, colorBotR, colorBotL,colorTop2, colorBotR2, colorBotL2;
-    private Color resultTop, resultBotR, resultBotL;
+    private volatile Color resultTop, resultBotR, resultBotL;
     private ElapsedTime brat1 = new ElapsedTime(), brat2 = new ElapsedTime(), brat3 = new ElapsedTime();
     private ElapsedTime shootingTime = new ElapsedTime();
     private Thread thread = null;
     public boolean ballsfull = true;
     private Telemetry telemetry;
-    private boolean isRunning = true, live = false;
+    private volatile boolean isRunning = true, live = false;
     int brat1up, brat2up, brat3up, greenPos=-1, target = 1;
     public boolean shootingThreeBalls = false;
 
@@ -50,41 +50,90 @@ public class Selectioner{
         this.telemetry = telemetry;
     }
 
-    public void start() {       //starts color sensors
+    public void start() {
         isRunning = true;
         init();
-        if(thread == null || !thread.isAlive()){
-            thread = new Thread(() ->{
-                    while(isRunning){
-                        if(!shootingThreeBalls){
-                            resultTop = Color.getColor2C(colorTop.red(),colorTop.green(),colorTop.blue(),colorTop.alpha(),colorTop2.red(),colorTop2.green(),colorTop2.blue(),colorTop2.alpha());
-                            resultBotL = Color.getColor2C(colorBotL.red(),colorBotL.green(),colorBotL.blue(),colorBotL.alpha(),colorBotL2.red(),colorBotL2.green(),colorBotL2.blue(),colorBotL2.alpha());
-                            resultBotR= Color.getColor2C(colorBotR.red(),colorBotR.green(),colorBotR.blue(),colorBotR.alpha(),colorBotR2.red(),colorBotR2.green(),colorBotR2.blue(),colorBotR2.alpha());
-                        }
-                        if(resultTop!= Color.INVALID && resultBotL != Color.INVALID && resultBotR != Color.INVALID)
-                            ballsfull = true;
-                        else
-                            ballsfull = false;
-                        checkTimer();
-                        sleep(30);
+
+        if (thread == null || !thread.isAlive()) {
+            thread = new Thread(() -> {
+                while (isRunning && !Thread.currentThread().isInterrupted()) {
+
+                    if (!shootingThreeBalls) {
+                        resultTop = Color.getColor2C(
+                                colorTop.red(), colorTop.green(), colorTop.blue(), colorTop.alpha(),
+                                colorTop2.red(), colorTop2.green(), colorTop2.blue(), colorTop2.alpha());
+
+                        resultBotL = Color.getColor2C(
+                                colorBotL.red(), colorBotL.green(), colorBotL.blue(), colorBotL.alpha(),
+                                colorBotL2.red(), colorBotL2.green(), colorBotL2.blue(), colorBotL2.alpha());
+
+                        resultBotR = Color.getColor2C(
+                                colorBotR.red(), colorBotR.green(), colorBotR.blue(), colorBotR.alpha(),
+                                colorBotR2.red(), colorBotR2.green(), colorBotR2.blue(), colorBotR2.alpha());
                     }
+
+                    if (shootingThreeBalls) {
+                        handleShooting();
+                    }
+
+                    ballsfull = (resultTop != Color.INVALID && resultBotL != Color.INVALID && resultBotR != Color.INVALID);
+                    checkTimer();
+                    sleep(40);
+                }
+
             });
+            thread.start();
         }
-        thread.start();
     }
+
+    private void handleShooting() {
+
+        if (shootingTime.seconds() > 2) {
+            shootingThreeBalls = false;
+            target = 1;
+            return;
+        }
+        if (live) return;  //asteapta servouri
+        boolean shouldShootGreen = (greenPos == target);
+
+        if (shouldShootGreen) {
+            shootGreen();
+        } else {
+            shootPurple();
+        }
+
+        if (!live) { //trage surplus
+            if (shouldShootGreen) {
+                shootPurple();
+            } else {
+                shootGreen();
+            }
+        }
+
+        target++;
+        if (target > 3) {
+            shootingThreeBalls = false;
+            target = 1;
+        }
+    }
+
+
     void checkTimer(){  //checks servos
         if(brat1.milliseconds()>HardwareClass.bratDelay && brat1up == 1) {
             selectTop.setPosition(HardwareClass.selectTopREST);
+            sleep(HardwareClass.bratDownDelay);
             brat1up=2;
             live = false;
         }
         if(brat2.milliseconds()>HardwareClass.bratDelay && brat2up == 1) {
             selectBotL.setPosition(HardwareClass.selectBotLREST);
+            sleep(HardwareClass.bratDownDelay);
             brat2up=2;
             live = false;
         }
         if(brat3.milliseconds()>HardwareClass.bratDelay && brat3up == 1) {
             selectBotR.setPosition(HardwareClass.selectBotRREST);
+            sleep(HardwareClass.bratDownDelay);
             brat3up=2;
             live = false;
         }
@@ -99,40 +148,18 @@ public class Selectioner{
     }
 
     public void resetBrat(){  //resets servos
-            selectTop.setPosition(HardwareClass.selectTopLOW);
-            selectBotL.setPosition(HardwareClass.selectBotLLOW);
-            selectBotR.setPosition(HardwareClass.selectBotRLOW);
-            brat1up=0;
-            brat2up=0;
-            brat3up=0;
+        selectTop.setPosition(HardwareClass.selectTopLOW);
+        selectBotL.setPosition(HardwareClass.selectBotLLOW);
+        selectBotR.setPosition(HardwareClass.selectBotRLOW);
+        brat1up=0;
+        brat2up=0;
+        brat3up=0;
     }
 
-    public void shoot3Balls(){  //shoots 3 balls using the obelisk colors
+    public void shoot3Balls() {
         shootingThreeBalls = true;
         shootingTime.reset();
-        printesaDinDubai(greenPos);
-        shootingThreeBalls = false;
-    }
-
-    public void shootingBalls(){
-        if(!live){
-            if(greenPos==1 && target == 1){
-                shootGreen();
-            } else {
-                shootPurple();
-            }
-            if(greenPos==2 && target == 2){
-                shootGreen();
-            } else {
-                shootPurple();
-            }
-            if(greenPos==3 && target == 3){
-                shootGreen();
-            } else {
-                shootPurple();
-            }
-            target++;
-        }
+        target = 1;
     }
 
     public void printesaDinDubai(int pos){  //deprecated way of shooting
@@ -185,6 +212,7 @@ public class Selectioner{
         selectTop.setPosition(HardwareClass.selectTopHIGH);
     }
     public void shootPurple() {
+        live = true;
         if(resultTop == Color.PURPLE) {
             resultTop = Color.INVALID;
             topServoUp();
@@ -194,10 +222,11 @@ public class Selectioner{
         } else if(resultBotR == Color.PURPLE) {
             resultBotR = Color.INVALID;
             rightServoUp();
-        }
+        } else live = false;
     }
 
     public void shootGreen() {
+        live = true;
         if(resultTop == Color.GREEN) {
             resultTop = Color.INVALID;
             topServoUp();
@@ -207,7 +236,7 @@ public class Selectioner{
         } else if(resultBotR == Color.GREEN) {
             resultBotR = Color.INVALID;
             rightServoUp();
-        }
+        } else live = false;
     }
 
     public void telemetry() {
@@ -252,10 +281,12 @@ public class Selectioner{
 
     public void stop() {
         isRunning = false;
-        if (thread != null ) {
+        if (thread != null) {
             thread.interrupt();
+            thread = null;
         }
     }
+
 
     public void pause(){
         isRunning = false;
@@ -268,7 +299,7 @@ public class Selectioner{
         try {
             Thread.sleep(sec);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
