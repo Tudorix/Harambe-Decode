@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.pedroPathing.UaTaFac;
 
 
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
 import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
 @Autonomous(name = "Sunt Inconjurat De Lei" , group = "Test")
@@ -28,17 +30,13 @@ public class SuntInconjuratDeLei extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.
     private final Pose scorePose = new Pose(46.1, 97.7  , Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose2 = new Pose(56.1, 97.7  , Math.toRadians(90)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose3 = new Pose(60, 97.7  , Math.toRadians(90)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose1 = new Pose(56.1,87.7,Math.toRadians(90)); // scorePose 1 doar cu turreta
+    private final Pose scorePose1 = new Pose(46.1,97.7,Math.toRadians(90)); // scorePose 1 doar cu turreta
     private final Pose pickup1Pose = new Pose(58, 99, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1_3Pose = new Pose(58, 120, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2Pose = new Pose(82, 99   , Math.toRadians(90)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup2_3Pose = new Pose(78,128,Math.toRadians(90));
     private final Pose parkPose = new Pose(40.7, 91, 2.116); // Park // Park
     private final Pose unloadPose = new Pose(83,130,Math.toRadians(123.5));
-    private final Pose curveAsist = new Pose(79,102,Math.toRadians(90));
-    private final Pose rest = new Pose (68,87.5, Math.toRadians(90));
     private final Pose aux = new Pose (78, 90   , Math.toRadians(90));
     double shoots = 0;
     private Follower follower;
@@ -59,7 +57,7 @@ public class SuntInconjuratDeLei extends OpMode {
     private PathChain grabPickup1, grabPickup1_3, grabPickup2, grabPickup2_3,scorePickup2,scorePickup3, preload,scorePickup1, Park,rPath1;
 
     private PathChain unload1,unload2;
-    private PathChain ScorePreload , GrabFirst, GrabFromRack, ScoreFromRack, GrabSecond;
+    private PathChain ScorePreload , GrabFirst, GrabFromRack, ScoreFromRack, GrabSecond, Unload;
 
     double Treshold = 0.73;
     int REP = 3000;
@@ -97,8 +95,8 @@ public class SuntInconjuratDeLei extends OpMode {
                     motors.intakeReverse();
                     servos.turretGT(0.66);
                 })
-                .addPath(new BezierLine(pickup2Pose, scorePose2))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose2.getHeading())
+                .addPath(new BezierLine(pickup2Pose, scorePose1))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose1.getHeading())
                 .addParametricCallback(0.9,() -> {
                     startPresiune();
                     motors.intakeOff();
@@ -106,8 +104,8 @@ public class SuntInconjuratDeLei extends OpMode {
                 .build();
 
         GrabSecond = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2, pickup1Pose))
-                .setLinearHeadingInterpolation(scorePose2.getHeading(), pickup1Pose.getHeading())
+                .addPath(new BezierLine(scorePose1, pickup1Pose))
+                .setLinearHeadingInterpolation(scorePose1.getHeading(), pickup1Pose.getHeading())
                 .addParametricCallback(0,() -> {
                     motors.intakeOn();
                     selectioner.resetServos();
@@ -120,16 +118,16 @@ public class SuntInconjuratDeLei extends OpMode {
                     motors.intakeReverse();
                     servos.turretGT(0.67);
                 })
-                .addPath(new BezierLine(pickup1Pose, scorePose2))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose2.getHeading())
+                .addPath(new BezierLine(pickup1Pose, scorePose1))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose1.getHeading())
                 .addParametricCallback(0.9,() -> {
                     motors.intakeOff();
                 })
                 .build();
 
         GrabFromRack = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2, pickup2Pose))
-                .setLinearHeadingInterpolation(scorePose2.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierLine(scorePose1, pickup2Pose))
+                .setLinearHeadingInterpolation(scorePose1.getHeading(), pickup2Pose.getHeading())
                 .addPath(new BezierLine(pickup2Pose, aux))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), aux.getHeading())
                 .addParametricCallback(0,() -> {
@@ -145,52 +143,17 @@ public class SuntInconjuratDeLei extends OpMode {
                 .addParametricCallback(0.1,() -> {
                     motors.intakeReverse();
                 })
-                .addPath(new BezierLine(pickup2Pose, scorePose2))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose2.getHeading())
+                .addPath(new BezierLine(pickup2Pose, scorePose1))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose1.getHeading())
                 .addParametricCallback(0.9,() -> {
                     startPresiune();
                     motors.intakeOff();
                 })
                 .build();
 
-        grabPickup2_3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose, pickup2_3Pose))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2_3Pose.getHeading())
-                .build();
-
-        scorePickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup2_3Pose,curveAsist, scorePose1))
-                .setLinearHeadingInterpolation(pickup2_3Pose.getHeading(), scorePose1.getHeading())
-                .build();
-
-        unload1 = follower.pathBuilder()
+        Unload = follower.pathBuilder()
                 .addPath(new BezierLine(aux, unloadPose))
                 .setLinearHeadingInterpolation(aux.getHeading(), unloadPose.getHeading())
-                .build();
-
-        unload2 = follower.pathBuilder()
-                .addPath(new BezierLine(curveAsist,unloadPose))
-                .setLinearHeadingInterpolation(curveAsist.getHeading(), unloadPose.getHeading())
-                .build();
-
-        rPath1 = follower.pathBuilder()
-                .addPath(new BezierCurve(unloadPose,curveAsist,rest))
-                .setLinearHeadingInterpolation(unloadPose.getHeading(), rest.getHeading())
-                .build();
-
-        grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(rest, pickup1Pose))
-                .setLinearHeadingInterpolation(rest.getHeading(), pickup1Pose.getHeading())
-                .build();
-
-        grabPickup1_3  = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1Pose, pickup1_3Pose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1_3Pose.getHeading())
-                .build();
-
-        scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1_3Pose, parkPose))
-                .setLinearHeadingInterpolation(pickup1_3Pose.getHeading(), parkPose.getHeading())
                 .build();
 
         Park = follower.pathBuilder()
@@ -250,15 +213,11 @@ public class SuntInconjuratDeLei extends OpMode {
                     follower.followPath(GrabFromRack, true);
                     setPathState(5);
                 }
-
                 break;
-
             case 5:
-
                 if(!follower.isBusy()) {
-                    follower.followPath(unload1);
-                    this.sleep(2000);
-                    setPathState(6);
+                    follower.followPath(Unload,true);
+                    setPathState(66);
                 }
                 break;
             case 6:
@@ -303,24 +262,54 @@ public class SuntInconjuratDeLei extends OpMode {
             case 10:
 
                 if(!follower.isBusy()) {
-
-                    if(pathTimer.getElapsedTimeSeconds()>1.4) {
-                        motors.intakeReverse();
-                        motors.intakeOff();
-                        shootBall();
-                        sleep(150);
-                        setPathState(100);
+                    follower.followPath(GrabFromRack, true);
+                    setPathState(11);
+                }
+                break;
+            case 11:
+                if(!follower.isBusy()) {
+                    follower.followPath(Unload,true);
+                    setPathState(67);
+                }
+                break;
+            case 12:
+                if(!follower.isBusy()) {
+                    follower.followPath(ScoreFromRack,true);
+                    setPathState(13);
+                }
+                break;
+            case 13:
+                if(!follower.isBusy()) {
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= TargetRPM * Treshold){
+                            break;
+                        }
                     }
+                    stopPresiune();
+                    setPathState(14);
+                }
+                break;
+            case 14:
+                if(!follower.isBusy()) {
+                    follower.followPath(ScoreFromRack,true);
+                    setPathState(-1);
                 }
                 break;
 
-            case 100:
+            case 67:
 
                 if(!follower.isBusy()) {
-                    motors.rampStop();
+                    this.sleep(2000);
+                    setPathState(12);
+                }
+                break;
 
-                    PoseStorage.autoPose = follower.getPose();
-                    setPathState(-1);
+            case 66:
+
+                if(!follower.isBusy()) {
+                    this.sleep(2000);
+                    setPathState(6);
                 }
                 break;
         }
@@ -415,13 +404,14 @@ public class SuntInconjuratDeLei extends OpMode {
     }
 
     public void startPresiune(){
+        motors.intakeOn();
         motors.setCoefsMan(High_P,0,0,1.2);
         motors.setRampVelocityC((int)(TargetRPM));
         //selectioner.resetServos();
     }
 
     public void stopPresiune(){
-        selectioner.unloadBallsQuick();
+        selectioner.unloadBallsQuick_Short();
         motors.setCoefsMan(Low_P,0,0,1.2);
         motors.setRampVelocityC((int)(0.33 * TargetRPM));
         selectioner.resetServos();
