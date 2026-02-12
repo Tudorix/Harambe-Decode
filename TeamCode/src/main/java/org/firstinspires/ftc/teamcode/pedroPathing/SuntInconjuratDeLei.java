@@ -27,16 +27,19 @@ import org.firstinspires.ftc.teamcode.Threads.Servos;
 public class SuntInconjuratDeLei extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(56.1, 87.7  , Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(46.1, 97.7  , Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose2 = new Pose(56.1, 97.7  , Math.toRadians(90)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose3 = new Pose(60, 97.7  , Math.toRadians(90)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose scorePose1 = new Pose(56.1,87.7,Math.toRadians(90)); // scorePose 1 doar cu turreta
-    private final Pose pickup1Pose = new Pose(61, 99, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup1_3Pose = new Pose(61, 125, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Pose = new Pose(58, 99, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1_3Pose = new Pose(58, 120, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2Pose = new Pose(82, 99   , Math.toRadians(90)); // Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2_3Pose = new Pose(78,130,Math.toRadians(90));
+    private final Pose pickup2_3Pose = new Pose(78,128,Math.toRadians(90));
     private final Pose parkPose = new Pose(40.7, 91, 2.116); // Park // Park
-    private final Pose unloadPose = new Pose(82.4,132,Math.toRadians(123.5));
+    private final Pose unloadPose = new Pose(83,130,Math.toRadians(123.5));
     private final Pose curveAsist = new Pose(79,102,Math.toRadians(90));
     private final Pose rest = new Pose (68,87.5, Math.toRadians(90));
+    private final Pose aux = new Pose (78, 90   , Math.toRadians(90));
     double shoots = 0;
     private Follower follower;
     private final ElapsedTime delay = new ElapsedTime();
@@ -56,11 +59,11 @@ public class SuntInconjuratDeLei extends OpMode {
     private PathChain grabPickup1, grabPickup1_3, grabPickup2, grabPickup2_3,scorePickup2,scorePickup3, preload,scorePickup1, Park,rPath1;
 
     private PathChain unload1,unload2;
-    private PathChain ScorePreload , GrabFirst;
+    private PathChain ScorePreload , GrabFirst, GrabFromRack, ScoreFromRack, GrabSecond;
 
-    double Treshold = 0.7;
+    double Treshold = 0.73;
     int REP = 3000;
-    double TargetRPM = 2150;
+    double TargetRPM = 1850;
 
     int High_P = 60 , Low_P = 20;
 
@@ -72,8 +75,8 @@ public class SuntInconjuratDeLei extends OpMode {
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .addParametricCallback(0,() -> {
-                    motors.setCoefsMan(Low_P,0,0,1.2);
-                    motors.setRampVelocityC((int)(0.33 * TargetRPM));
+                    startPresiune();
+                    selectioner.resetServos();
                     servos.turretGT(0.52);
                 })
                 .build();
@@ -84,19 +87,70 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
                 .addParametricCallback(0,() -> {
                     motors.intakeOn();
+                    selectioner.resetServos();
                 })
-                .addPath(new BezierLine(pickup2Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(pickup2Pose, pickup2_3Pose))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2_3Pose.getHeading())
+                .addPath(new BezierLine(pickup2_3Pose, pickup2Pose))
+                .setLinearHeadingInterpolation(pickup2_3Pose.getHeading(), pickup2Pose.getHeading())
                 .addParametricCallback(0.4,() -> {
+                    motors.intakeReverse();
+                    servos.turretGT(0.66);
+                })
+                .addPath(new BezierLine(pickup2Pose, scorePose2))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose2.getHeading())
+                .addParametricCallback(0.9,() -> {
+                    startPresiune();
                     motors.intakeOff();
-                    motors.setCoefsMan(Low_P,0,0,1.2);
-                    motors.setRampVelocityC((int)(0.33 * TargetRPM));
                 })
                 .build();
 
-        grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup2Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
+        GrabSecond = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose2, pickup1Pose))
+                .setLinearHeadingInterpolation(scorePose2.getHeading(), pickup1Pose.getHeading())
+                .addParametricCallback(0,() -> {
+                    motors.intakeOn();
+                    selectioner.resetServos();
+                })
+                .addPath(new BezierLine(pickup1Pose, pickup1_3Pose))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1_3Pose.getHeading())
+                .addPath(new BezierLine(pickup1_3Pose, pickup1Pose))
+                .setLinearHeadingInterpolation(pickup1_3Pose.getHeading(), pickup1Pose.getHeading())
+                .addParametricCallback(0.3,() -> {
+                    motors.intakeReverse();
+                    servos.turretGT(0.67);
+                })
+                .addPath(new BezierLine(pickup1Pose, scorePose2))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose2.getHeading())
+                .addParametricCallback(0.9,() -> {
+                    motors.intakeOff();
+                })
+                .build();
+
+        GrabFromRack = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose2, pickup2Pose))
+                .setLinearHeadingInterpolation(scorePose2.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierLine(pickup2Pose, aux))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), aux.getHeading())
+                .addParametricCallback(0,() -> {
+                    motors.intakeOn();
+                    selectioner.resetServos();
+                })
+
+                .build();
+
+        ScoreFromRack = follower.pathBuilder()
+                .addPath(new BezierLine(unloadPose, pickup2Pose))
+                .setLinearHeadingInterpolation(unloadPose.getHeading(), pickup2Pose.getHeading())
+                .addParametricCallback(0.1,() -> {
+                    motors.intakeReverse();
+                })
+                .addPath(new BezierLine(pickup2Pose, scorePose2))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose2.getHeading())
+                .addParametricCallback(0.9,() -> {
+                    startPresiune();
+                    motors.intakeOff();
+                })
                 .build();
 
         grabPickup2_3 = follower.pathBuilder()
@@ -110,8 +164,8 @@ public class SuntInconjuratDeLei extends OpMode {
                 .build();
 
         unload1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose1,curveAsist))
-                .setLinearHeadingInterpolation(scorePose1.getHeading(), curveAsist.getHeading())
+                .addPath(new BezierLine(aux, unloadPose))
+                .setLinearHeadingInterpolation(aux.getHeading(), unloadPose.getHeading())
                 .build();
 
         unload2 = follower.pathBuilder()
@@ -159,10 +213,10 @@ public class SuntInconjuratDeLei extends OpMode {
             case 1:
 
                 if(!follower.isBusy()) {
-                    startPresiune();
+                    motors.intakeOn();
                     for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() < TargetRPM * Treshold){
-                            telemetry.addLine("Vin Lautarii");
+                        if(motors.getVelocity() >= TargetRPM * Treshold){
+                            break;
                         }
                     }
                     stopPresiune();
@@ -172,7 +226,7 @@ public class SuntInconjuratDeLei extends OpMode {
 
             case 2:
                 if(!follower.isBusy()) {
-                    follower.followPath(GrabFirst);
+                    follower.followPath(GrabFirst,true);
                     setPathState(3);
                 }
                 break;
@@ -180,82 +234,69 @@ public class SuntInconjuratDeLei extends OpMode {
             case 3:
                 if(!follower.isBusy()) {
                     startPresiune();
+                    motors.intakeOn();
                     for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() < TargetRPM * Treshold){
-                            telemetry.addLine("Vin Lautarii");
+                        if(motors.getVelocity() >= TargetRPM * Treshold){
+                            break;
                         }
                     }
                     stopPresiune();
-                    setPathState(-1);
+                    setPathState(4);
                 }
                 break;
 
             case 4:
+                if(!follower.isBusy()) {
+                    follower.followPath(GrabFromRack, true);
+                    setPathState(5);
+                }
 
                 break;
 
             case 5:
 
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>1) {
-                        motors.intakeOn();
-                        timer.reset();
-                        setPathState(6);
-                        follower.followPath(unload2, true);
-                    }
-                    timer.reset();
+                    follower.followPath(unload1);
+                    this.sleep(2000);
+                    setPathState(6);
                 }
                 break;
             case 6:
-                motors.intakeOn();
                 if(!follower.isBusy()) {
-                    if(timer.seconds()>2.1) {
-                        servos.turretGT(0.72);
-//                        turret.goToPosition(-170);
-//                        turret.goToPosition(-230);//255
-                        timer.reset();
-                        follower.followPath(rPath1,true);
-                        setPathState(7);
-                    }
+                    follower.followPath(ScoreFromRack,true);
+                    setPathState(7);
                 }
                 break;
             case 7:
-                if(timer.seconds()>0.3)
-                    motors.intakeReverse();
-                if(timer.seconds()>0.55)
-                    motors.intakeOff();
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>2.3) {
-                        shootBall();
-                        sleep(200);
-                        motors.intakeOff();
-                        follower.followPath(grabPickup1, true);
-                        setPathState(8);
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= TargetRPM * Treshold){
+                            break;
+                        }
                     }
+                    stopPresiune();
+                    setPathState(8);
                 }
                 break;
             case 8:
 
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>0.7) {
-                        timer.reset();
-                        motors.intakeOn();
-                        follower.followPath(grabPickup1_3, true);
-                        setPathState(9);
-                    }
+                    follower.followPath(GrabSecond,true);
+                    setPathState(9);
                 }
                 break;
             case 9:
-
                 if(!follower.isBusy()) {
-                    if(timer.milliseconds()>1000) {
-                        motors.setRampVelocityC(2050);
-                        servos.turretGT(0.47);
-                        timer.reset();
-                        sleep(200);
-                        follower.followPath(scorePickup1, true);
-                        setPathState(10);
+                    startPresiune();
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= TargetRPM * Treshold){
+                            break;
+                        }
                     }
+                    stopPresiune();
+                    setPathState(-1);
                 }
                 break;
 
@@ -331,7 +372,7 @@ public class SuntInconjuratDeLei extends OpMode {
         hardwareClass.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        servos.hoodMove(1);
+        //servos.hoodMove(1);
         follower.setStartingPose(startPose);
         motors.setRampCoefs();
         distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),target);
@@ -373,17 +414,18 @@ public class SuntInconjuratDeLei extends OpMode {
         shoots++;
     }
 
+    public void startPresiune(){
+        motors.setCoefsMan(High_P,0,0,1.2);
+        motors.setRampVelocityC((int)(TargetRPM));
+        //selectioner.resetServos();
+    }
+
     public void stopPresiune(){
         selectioner.unloadBallsQuick();
         motors.setCoefsMan(Low_P,0,0,1.2);
         motors.setRampVelocityC((int)(0.33 * TargetRPM));
         selectioner.resetServos();
-    }
-
-    public void startPresiune(){
-        selectioner.unloadBallsQuick();
-        motors.setCoefsMan(High_P,0,0,1.2);
-        motors.setRampVelocityC((int)(0.33 * TargetRPM));
+        motors.intakeOff();
     }
 
 

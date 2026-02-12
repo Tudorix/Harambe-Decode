@@ -71,23 +71,31 @@ public class Selectioner{
     }
 
     public void unloadBallsQuick(){  //
+        sleep(100);
         rightServoUp();
         sleep(100);
         leftServoUp();
-        sleep(100);
+        sleep(140);
         topServoUp();
+    }
+
+    public void unloadBallsQuick_Short(){  //
+        rightServoUp();
         sleep(100);
+        leftServoUp();
+        sleep(140);
+        topServoUp();
     }
 
     public int getOrder(){
-        return 0;                   ////
+        return 0;
     }
 
     public void topServoUp() {
         selectTop.setPosition(HardwareClass.selectTopHIGH);
         brat1up = 1;
         sleep(HardwareClass.bratDelay);
-        selectTop.setPosition(HardwareClass.selectTopLOW);
+        selectTop.setPosition(HardwareClass.selectTopREST);
     }
 
     public void resetServos(){
@@ -100,14 +108,14 @@ public class Selectioner{
         selectBotL.setPosition(HardwareClass.selectBotLHIGH);
         brat2up = 1;
         sleep(HardwareClass.bratDelay);
-        selectBotL.setPosition(HardwareClass.selectBotLLOW);
+        selectBotL.setPosition(HardwareClass.selectBotLREST);
     }
 
     public void rightServoUp(){
         selectBotR.setPosition(HardwareClass.selectBotRHIGH);
         brat3up = 1;
         sleep(HardwareClass.bratDelay);
-        selectBotR.setPosition(HardwareClass.selectBotRLOW);
+        selectBotR.setPosition(HardwareClass.selectBotRREST);
     }
 
     public int getPurplePos() {

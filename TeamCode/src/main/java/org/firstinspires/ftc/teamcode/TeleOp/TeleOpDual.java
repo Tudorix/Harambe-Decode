@@ -38,7 +38,9 @@
         boolean override = false;
         double targetPosition, targetAngle, target;
 
-        double threshold = 0.71; // To Adjust
+        double threshold = 0.68; // To Adjust
+        double threshold_far = 1.1; // To Adjust
+        double threshold_close = 0.69; // To Adjust
         private Follower follower;
         private TelemetryManager telemetryM;
 
@@ -80,6 +82,8 @@
                 holonomic.start();
             }
 
+            servos.turretGT(0.54);
+
             double distance = -1;
             while(opModeIsActive()) {
                 switch(mode){
@@ -92,8 +96,17 @@
 
                         if(gamepad1.right_bumper){
                             distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(60,0,0,1.2);
+                            motors.setCoefsMan(55,0,0,1.2);
                             motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
+                            threshold = threshold_close;
+                            mode = "shoot";
+                        }
+
+                        if(gamepad1.y){
+                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                            motors.setCoefsMan(120,0,0,5);
+                            motors.setRampVelocityC((int)(getRPM(distance)) + 1000);// * 1.1
+                            threshold = threshold_far;
                             mode = "shoot";
                         }
 
@@ -115,8 +128,13 @@
                     }
                     case "shoot":{
                         if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
-                            selectioner.unloadBallsQuick();
+                            if(threshold < 0.8){
+                                selectioner.unloadBallsQuick_Short();
+                            }else{
+                                selectioner.unloadBallsQuick();
+                            }
                             distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                            sleep(200);
                             motors.setCoefsMan(20,0,0,1.2);
                             motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
                             selectioner.resetServos();
