@@ -9,7 +9,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -24,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
 //@Autonomous(name = "Libelula" , group = "Test")
-public class Libelula extends OpMode {
+public class BuzunarulDeLaSpate extends OpMode {
     int target = 0;
     private final Pose startPose = new Pose(133.6, 86.95, Math.toRadians(180)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(123.5, 86.7,Math.toRadians(120)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.

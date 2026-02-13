@@ -32,11 +32,13 @@ public class HardwareClass {
 
     public static int bratDelay = 200,bratDownDelay = 150; // milisecunde
 
-    public static  double selectTopLOW = 0.86, selectBotLLOW = 0.96,selectBotRLOW =0.95 ;//0.14
+    public static  double selectTopLOW = 0.86, selectBotLLOW = 0.9,selectBotRLOW =0.95 ;//0.14
 
-    public static  double selectTopREST = 0.7, selectBotLREST = 0.80,selectBotRREST =0.80 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
+    public static  double selectTopREST = 0.7, selectBotLREST = 0.75,selectBotRREST =0.80 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
 
-    public static  double selectTopHIGH = 0.45, selectBotLHIGH = 0.6,selectBotRHIGH = 0.54;//0.57
+    public static  double selectTopHIGH = 0.45, selectBotLHIGH = 0.52,selectBotRHIGH = 0.54;//0.57
+
+    public double hood_down = 1 , hood_up = 0.7;
 
 
 

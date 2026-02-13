@@ -16,17 +16,14 @@
     import org.firstinspires.ftc.teamcode.Threads.Selectioner;
     import org.firstinspires.ftc.teamcode.Threads.Servos;
     import org.firstinspires.ftc.teamcode.Threads.Turret;
-    import org.firstinspires.ftc.teamcode.Utils.Color;
     import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
     import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
-
-    import java.util.ArrayList;
 
     //comment
 
 
-    @TeleOp(name="TeleOp Pisica din dubai", group = "Solo")
-    public class TeleOpDual extends LinearOpMode {
+    @TeleOp(name="SistemulOtoman", group = "Solo")
+    public class SistemulOtoman extends LinearOpMode {
         Servos servos = null;
         HardwareClass hardwareClass = null;
         Holonomic holonomic = null;
@@ -35,6 +32,8 @@
         Selectioner selectioner = null;
         Turret turret = null;
 
+        ElapsedTime Timer = null;
+
         boolean override = false;
         double targetPosition, targetAngle, target;
 
@@ -42,7 +41,11 @@
         double threshold_far = 1.1; // To Adjust
         double threshold_close = 0.69; // To Adjust
         private Follower follower;
+        private int delay_shoot = 110;
         private TelemetryManager telemetryM;
+
+        private double InregisSpeed = 0;
+        int test_case = 1;
 
         String mode = "drive";
         @Override
@@ -64,6 +67,8 @@
             hardwareClass.FL.setDirection(DcMotorSimple.Direction.REVERSE);
             hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
             motors.setRampCoefs();
+
+            Timer = new ElapsedTime();
 
             waitForStart();
 
@@ -88,58 +93,90 @@
             while(opModeIsActive()) {
                 switch(mode){
                     case "drive":{
-                        if(gamepad1.left_bumper){
-                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+
+                        // ---- CONST SPEEEEEED ----
+                        if(gamepad1.dpad_down){
                             motors.setCoefsMan(20,0,0,1.2);
-                            motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
+                            motors.setRampVelocityC(1000);
                         }
 
+                        // ---- SHOOTING ----
                         if(gamepad1.right_bumper){
                             distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(55,0,0,1.2);
+                            motors.setCoefsMan(60,0,0,1.2);
                             motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
                             threshold = threshold_close;
-                            mode = "shoot";
+                            mode = "shoot_fast";
                         }
 
-                        if(gamepad1.y){
+                        if(gamepad1.left_bumper){
                             distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(120,0,0,5);
+                            motors.setCoefsMan(120,0,0,1.2);
                             motors.setRampVelocityC((int)(getRPM(distance)) + 1000);// * 1.1
                             threshold = threshold_far;
-                            mode = "shoot";
+                            mode = "shoot_fast";
                         }
 
+
+                        // ---- SHOOT TEST ----
+                        if (gamepad1.a){
+                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
+                            motors.setCoefsMan(60,0,0,1.2);
+                            motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
+                            threshold = threshold_close;
+                            test_case = 1;
+                            mode = "test";
+                        }
+
+
+                        //----- INTAKE ------
                         if(gamepad1.right_trigger > 0){
                             motors.intakeOn();
                         }
                         else if(gamepad1.right_trigger <= 0){
                             motors.intakeOff();
-                        }
-
-                        if(gamepad1.left_trigger > 0){
+                        }else if(gamepad1.left_trigger > 0){
                             motors.intakeReverse();
-                        }
-                        else if(gamepad1.left_trigger <= 0){
-                            motors.intakeOff();
                         }
 
                         break;
                     }
-                    case "shoot":{
+                    case "shoot_fast":{
                         if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
+                            motors.intakeOn();
                             if(threshold < 0.8){
-                                selectioner.unloadBallsQuick_Short();
+                                shoot_short();
                             }else{
-                                selectioner.unloadBallsQuick();
+                                shoot_long();
                             }
                             distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
                             sleep(200);
                             motors.setCoefsMan(20,0,0,1.2);
                             motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
                             selectioner.resetServos();
+                            motors.intakeOff();
                             mode = "drive";
                         }
+
+
+                        break;
+                    }
+                    case "test":{
+
+                        if (motors.getVelocity() >= threshold * (int)(getRPM(distance)) && test_case == 1){
+                            telemetry.addData("Target RPM" , InregisSpeed);
+                            InregisSpeed = motors.getVelocity();
+                            Timer.reset();
+                            Timer.startTime();
+                            test_case = 2;
+                            shoot_one();
+                        }
+
+                        if(motors.getVelocity() >= InregisSpeed && test_case == 2){
+                            telemetry.addData("Time (ms)",Timer.milliseconds());
+                            mode = "drive";
+                        }
+                        telemetry.update();
                         break;
                     }
                 }
@@ -204,4 +241,38 @@
             else
                 return 6 + (d - 170) * (5.0 / 150.0);
         }
+
+        void shoot_short(){
+            //Shoot First
+            HoodToPos(0);
+            selectioner.rightServoUp();
+            sleep(delay_shoot);
+            //Shoot Second
+            HoodToPos(0.02);
+            selectioner.leftServoUp();
+            sleep(delay_shoot);
+            //Shoot Third
+            HoodToPos(0.07);
+            selectioner.topServoUp();
+            HoodToPos(0);
+        }
+
+        void HoodToPos(double pos){
+            hardwareClass.angle.setPosition(hardwareClass.hood_down - pos);
+        }
+
+        void shoot_long(){
+            sleep(delay_shoot);
+            selectioner.rightServoUp();
+            sleep(delay_shoot);
+            selectioner.leftServoUp();
+            sleep(delay_shoot);
+            selectioner.topServoUp();
+        }
+
+        void shoot_one(){
+            selectioner.topServoUp();
+        }
+
+
     }
