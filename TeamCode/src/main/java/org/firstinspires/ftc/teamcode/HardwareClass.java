@@ -26,17 +26,17 @@ public class HardwareClass {
     public RevColorSensorV3 colorTop2, colorBotR2, colorBotL2;
     public static double startX = 64 ,startY = 0, startAngle=180;//Inch
     public static double redX = -57, redY = 57;
-    public static double redScoreX = -65, redScoreY = 65;       //65   62
+    public static double redScoreX = -200, redScoreY = 0;       //65   62
     public static double blueX = -57, blueY = -57;
-    public static double blueScoreX = -65, blueScoreY = -65;
+    public static double blueScoreX = 70, blueScoreY = 0;
 
-    public static int bratDelay = 200,bratDownDelay = 150; // milisecunde
+    public static int bratDelay = 180,bratDownDelay = 150; // milisecunde
 
-    public static  double selectTopLOW = 0.86, selectBotLLOW = 0.9,selectBotRLOW =0.95 ;//0.14
+    public static  double selectTopLOW = 0.86, selectBotLLOW = 0.89,selectBotRLOW =0.93 ;//0.14
 
-    public static  double selectTopREST = 0.7, selectBotLREST = 0.75,selectBotRREST =0.80 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
+    public static  double selectTopREST = 0.68, selectBotLREST = 0.72,selectBotRREST =0.77 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
 
-    public static  double selectTopHIGH = 0.45, selectBotLHIGH = 0.52,selectBotRHIGH = 0.54;//0.57
+    public static  double selectTopHIGH = 0.4, selectBotLHIGH = 0.45,selectBotRHIGH = 0.50;//0.57
 
     public double hood_down = 1 , hood_up = 0.7;
 
@@ -56,6 +56,7 @@ public class HardwareClass {
         this.ramp = hardwareMap.get(DcMotorEx.class, "Ramp");
         this.ramp2 = hardwareMap.get(DcMotorEx.class,"Ramp2");
         this.intakeMotor = hardwareMap.get(DcMotor.class, "IM");
+        this.turret = hardwareMap.get(DcMotorEx.class , "TR");
 
 
         /*Servos*/
@@ -63,8 +64,6 @@ public class HardwareClass {
         this.selectTop = hardwareMap.get(Servo.class, "ST");
         this.selectBotR = hardwareMap.get(Servo.class, "SR");
         this.selectBotL = hardwareMap.get(Servo.class, "SL");
-        this.turret1= hardwareMap.get(Servo.class,"TR1");
-        this.turret2= hardwareMap.get(Servo.class,"TR2");
 
         /* Sensors */
         this.colorTop = hardwareMap.get(RevColorSensorV3.class, "CT");

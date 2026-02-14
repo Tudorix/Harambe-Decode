@@ -17,10 +17,10 @@ public class Servos {
     public Servos(HardwareClass hardwareClass, Telemetry telemetry , HardwareMap hardwareMap){
         this.hardwareClass = hardwareClass;
         this.angleServo = hardwareClass.angle;
-        this.turret1 = hardwareClass.turret1;
-        this.turret2 = hardwareClass.turret2;
-        turret1.setDirection(Servo.Direction.FORWARD);
-        turret2.setDirection(Servo.Direction.FORWARD);
+        //this.turret1 = hardwareClass.turret1;
+        //this.turret2 = hardwareClass.turret2;
+        //turret1.setDirection(Servo.Direction.FORWARD);
+        //turret2.setDirection(Servo.Direction.FORWARD);
     }
 
     public void turretGT(double pos){

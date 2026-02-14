@@ -16,7 +16,7 @@ public class Turret {
 
     Telemetry telemetry = null;
 
-    public static double kp = 0.009, ki = 0, kd = 0.00005;
+    public static double kp = 0.01, ki = 0, kd = 0.0001;
     public static double target = 100;
     TurretPID generalPID = null;
     HardwareClass hardwareClass = null;
@@ -34,16 +34,9 @@ public class Turret {
 
     public void setup(){
         running = true;
-
-        TurretMotor.setPower(0);
-        TurretMotor.setDirection(DcMotor.Direction.REVERSE);
-        TurretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        TurretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         TurretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         generalPID = TurretPID.getInstance(TurretMotor, "TR", "pid", telemetry);
-        generalPID.resetPID();
         generalPID.setCoefficients(kp, ki, kd);
         generalPID.start();
     }

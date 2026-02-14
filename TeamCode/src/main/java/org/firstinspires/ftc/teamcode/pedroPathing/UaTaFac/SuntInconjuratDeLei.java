@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
 import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
+import org.firstinspires.ftc.teamcode.Threads.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
@@ -47,6 +48,7 @@ public class SuntInconjuratDeLei extends OpMode {
     Limelight limelight = null;
     Selectioner selectioner = null;
     HardwareClass hardwareClass= null;
+    Turret turret = null;
     private TelemetryManager telemetryM;
 
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -66,7 +68,7 @@ public class SuntInconjuratDeLei extends OpMode {
 
     int High_P = 60 , Low_P = 20;
 
-    int delay_shoot = 100;
+    int delay_shoot = 150;
 
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
@@ -78,7 +80,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .addParametricCallback(0,() -> {
                     startPresiune();
                     selectioner.resetServos();
-                    servos.turretGT(0.52);
+                    turret.goToPosition(20);
                 })
                 .build();
 
@@ -96,7 +98,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(pickup2_3Pose.getHeading(), aux_2.getHeading())
                 .addParametricCallback(0.4,() -> {
                     motors.intakeReverse();
-                    servos.turretGT(0.66);
+                    turret.goToPosition(80);
                 })
                 .addPath(new BezierLine(aux_2, scorePose1))
                 .setLinearHeadingInterpolation(aux_2.getHeading(), scorePose1.getHeading())
@@ -119,7 +121,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(pickup1_3Pose.getHeading(), pickup1Pose.getHeading())
                 .addParametricCallback(0.3,() -> {
                     motors.intakeReverse();
-                    servos.turretGT(0.63);
+                    turret.goToPosition(80);
                 })
                 .addPath(new BezierLine(pickup1Pose, scorePose1))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose1.getHeading())
@@ -373,6 +375,9 @@ public class SuntInconjuratDeLei extends OpMode {
         hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
         hardwareClass.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        turret = Turret.getInstance(hardwareMap, telemetry);
+        turret.setup();
 
         //servos.hoodMove(1);
         follower.setStartingPose(startPose);

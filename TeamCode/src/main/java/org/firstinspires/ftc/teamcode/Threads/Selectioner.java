@@ -95,7 +95,7 @@ public class Selectioner{
         selectTop.setPosition(HardwareClass.selectTopHIGH);
         brat1up = 1;
         sleep(HardwareClass.bratDelay);
-        selectTop.setPosition(HardwareClass.selectTopREST);
+        selectTop.setPosition(HardwareClass.selectTopLOW);
     }
 
     public void resetServos(){
@@ -108,14 +108,14 @@ public class Selectioner{
         selectBotL.setPosition(HardwareClass.selectBotLHIGH);
         brat2up = 1;
         sleep(HardwareClass.bratDelay);
-        selectBotL.setPosition(HardwareClass.selectBotLREST);
+        selectBotL.setPosition(HardwareClass.selectBotLLOW);
     }
 
     public void rightServoUp(){
         selectBotR.setPosition(HardwareClass.selectBotRHIGH);
         brat3up = 1;
         sleep(HardwareClass.bratDelay);
-        selectBotR.setPosition(HardwareClass.selectBotRREST);
+        selectBotR.setPosition(HardwareClass.selectBotRLOW);
     }
 
     public int getPurplePos() {
