@@ -9,6 +9,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,11 +19,12 @@ import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
 import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
+import org.firstinspires.ftc.teamcode.Threads.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
-//@Autonomous(name = "Libelula" , group = "Test")
+@Autonomous(name = "BuzunarulDeLaSpate" , group = "Test")
 public class BuzunarulDeLaSpate extends OpMode {
     int target = 0;
     private final Pose startPose = new Pose(133.6, 86.95, Math.toRadians(180)); // Start Pose of our robot.
@@ -30,7 +32,8 @@ public class BuzunarulDeLaSpate extends OpMode {
     private final Pose scorePoseError = new Pose(123.5,90,Math.toRadians(117.5)); // 116??
     private final Pose pickupScore1 = new Pose(108.42,101,Math.toRadians(90));
     private final Pose pickupScore1_3 = new Pose(108.42,130,Math.toRadians(90));
-    private final Pose pickupPose2 = new Pose(131.09,132.26,1.25);
+    private final Pose pickupPose2 = new Pose(131.09,132.26,Math.toRadians(90));
+    private final Pose aux = new Pose(108.42,108,45);
     private final Pose pickupBlind= new Pose(127,131.8,Math.toRadians(90));
     private final Pose parkPose = new Pose(131.4,109.5,Math.toRadians(90));
     private final ElapsedTime delay = new ElapsedTime();
@@ -44,10 +47,20 @@ public class BuzunarulDeLaSpate extends OpMode {
     Selectioner selectioner = null;
     HardwareClass hardwareClass = null;
 
+    Turret turret = null;
+
     int smallDelay = 200; //mill
     int mediumDelay = 500;//mill
 
     int bigDelay = 1000;//mill
+
+    double Treshold = 1.1;
+    int REP = 3000;
+    double TargetRPM = 4000;
+
+    int High_P = 120 , Low_P = 20;
+
+    int delay_shoot = 150;
 
     ElapsedTime timer = new ElapsedTime();
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -61,41 +74,68 @@ public class BuzunarulDeLaSpate extends OpMode {
 
 
     private Path scorePreload;
-    private PathChain park, preload,pickup1, pickup1_3,scorePickup,pickupScore2,scoreScore2;
+    private PathChain park, Preload, Human, Pickup1;
 
 
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
-        preload = follower.pathBuilder()
+        Preload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0 , () -> {
+                    turret.goToPosition(0);
+                    selectioner.resetServos();
+                })
                 .build();
 
-        pickup1 = follower.pathBuilder()
+        Pickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickupScore1))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickupScore1.getHeading())
-                .build();
-
-        pickup1_3 = follower.pathBuilder()
+                .addParametricCallback(0 , () -> {
+                    motors.intakeOff();
+                    selectioner.resetServos();
+                })
                 .addPath(new BezierLine(pickupScore1, pickupScore1_3))
                 .setLinearHeadingInterpolation(pickupScore1.getHeading(), pickupScore1_3.getHeading())
+                .addParametricCallback(0 , () -> {
+                    motors.intakeOn();
+                })
+                .addPath(new BezierLine(pickupScore1_3, scorePose))
+                .setLinearHeadingInterpolation(pickupScore1_3.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.3 , () -> {
+                    motors.intakeReverse();
+                })
                 .build();
 
-        scorePickup = follower.pathBuilder()
-                .addPath(new BezierLine(pickupScore1_3, scorePoseError))
-                .setLinearHeadingInterpolation(pickupScore1_3.getHeading(), scorePoseError.getHeading())
-                .build();
-
-        pickupScore2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePoseError, pickupPose2))
-                .setLinearHeadingInterpolation(scorePoseError.getHeading(), pickupPose2.getHeading())
-                .build();
-
-        scoreScore2 = follower.pathBuilder()
-                .addPath(new BezierLine(pickupPose2, scorePoseError))
-                .setLinearHeadingInterpolation(pickupPose2.getHeading(), scorePoseError.getHeading())
+        Human = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, aux))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), aux.getHeading())
+                .addParametricCallback(0 , () -> {
+                    motors.intakeOff();
+                    selectioner.resetServos();
+                })
+                .addPath(new BezierLine(aux, pickupPose2))
+                .setLinearHeadingInterpolation(aux.getHeading(), pickupPose2.getHeading())
+                .addParametricCallback(0 , () -> {
+                    motors.intakeOn();
+                })
+                .addPath(new BezierLine(pickupPose2, aux))
+                .setLinearHeadingInterpolation(pickupPose2.getHeading(), aux.getHeading())
+                .addParametricCallback(0 , () -> {
+                    motors.intakeReverse();
+                })
+                .addPath(new BezierLine(aux, pickupPose2))
+                .setLinearHeadingInterpolation(aux.getHeading(), pickupPose2.getHeading())
+                .addParametricCallback(0 , () -> {
+                    motors.intakeOn();
+                })
+                .addPath(new BezierLine(pickupPose2, scorePose))
+                .setLinearHeadingInterpolation(pickupPose2.getHeading(), scorePose.getHeading())
+                .addParametricCallback(0.5 , () -> {
+                    motors.intakeReverse();
+                })
                 .build();
 
         park = follower.pathBuilder()
@@ -115,88 +155,58 @@ public class BuzunarulDeLaSpate extends OpMode {
         switch (pathState) {
 
             case 0:
-                follower.followPath(preload);
-                motors.setRampVelocityC(2950);
-                servos.hoodMove(15);
-                servos.turretGT(0.68);// 0.66?
-                follower.setMaxPower(0.8);
+                follower.followPath(Preload);
                 setPathState(1);
                 break;
             case 1:
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>4) {
-                        shootBall();
-                        sleep(mediumDelay);
-                        follower.followPath(pickup1, true);
-                        setPathState(2);
+                    startPresiune();
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= (TargetRPM - 1000) * Treshold){
+                            break;
+                        }
                     }
+                    stopPresiune();
+                    setPathState(2);
                 }
                 break;
             case 2:
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>1.5) {
-                        motors.intakeOn();
-                        follower.setMaxPower(0.85);
-                        servos.turretGT(0.67);// 0.66?
-                        follower.followPath(pickup1_3, true);
-                        setPathState(3);
-                    }
+                    follower.followPath(Pickup1);
+                    setPathState(3);
                 }
                 break;
-
             case 3:
-
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>2.7) {
-                        motors.intakeReverse();
-                        follower.followPath(scorePickup, true);
-                        setPathState(4);
+                    startPresiune();
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= (TargetRPM - 1000) * Treshold){
+                            break;
+                        }
                     }
+                    stopPresiune();
+                    setPathState(4);
                 }
                 break;
             case 4:
                 if(!follower.isBusy()) {
-                    motors.intakeOff();
-                    if(pathTimer.getElapsedTimeSeconds()>4.5) {
-                        servos.hoodMove(16);
-                        shootBall();
-                        motors.intakeOn();
-                        follower.followPath(pickupScore2, true);
-                        setPathState(5);
-                    }
+                    follower.followPath(Human);
+                    setPathState(5);
                 }
                 break;
-
-            case 5:{
+            case 5:
                 if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>4.5) {
-                        motors.intakeReverse();
-                        servos.turretGT(0.69);// 0.66?
-                        follower.followPath(scoreScore2, true);
-                        setPathState(6);
+                    startPresiune();
+                    motors.intakeOn();
+                    for(int i = 0; i < REP ; i++){
+                        if(motors.getVelocity() >= (TargetRPM - 1000) * Treshold){
+                            break;
+                        }
                     }
-                }
-                break;
-            }
-            case 6:{
-                if(timer.milliseconds()>400)
-                    motors.intakeOff();
-                if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>3) {
-                        shootBall();
-                        follower.followPath(park, true);        //Note: mai in dreapta, ii prea jos
-                        setPathState(100);
-                    }
-                }
-                break;
-            }
-            case 100:
-                if(!follower.isBusy()) {
-                    if(pathTimer.getElapsedTimeSeconds()>1) {
-                        PoseStorage.autoPose = follower.getPose();
-                        setPathState(-1);
-                        motors.rampStop();
-                    }
+                    stopPresiune();
+                    setPathState(-1);
                 }
                 break;
         }
@@ -244,11 +254,48 @@ public class BuzunarulDeLaSpate extends OpMode {
         hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
         hardwareClass.intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        turret = Turret.getInstance(hardwareMap,telemetry);
 
         servos.hoodMove(1);
         follower.setStartingPose(startPose);
         motors.setRampCoefs();
     }
+
+    public void startPresiune(){
+        motors.intakeOn();
+        motors.setCoefsMan(High_P,0,0,1.2);
+        motors.setRampVelocityC((int)(TargetRPM));
+    }
+
+    public void stopPresiune(){
+        shoot_long();
+        motors.setCoefsMan(Low_P,0,0,1.2);
+        motors.setRampVelocityC((int)(1000));
+        selectioner.resetServos();
+        motors.intakeOff();
+    }
+
+    void shoot_long(){
+        //Shoot First
+        HoodToPos(0);
+        selectioner.rightServoUp();
+        sleep(delay_shoot);
+        //Shoot Second
+        //HoodToPos(0.01);
+        selectioner.leftServoUp();
+        sleep(delay_shoot);
+        //Shoot Third
+        //HoodToPos(0.02);
+        selectioner.topServoUp();
+        HoodToPos(0);
+    }
+
+    void HoodToPos(double pos){
+        hardwareClass.angle.setPosition(hardwareClass.hood_down - pos);
+    }
+
+
+
 
 
     @Override

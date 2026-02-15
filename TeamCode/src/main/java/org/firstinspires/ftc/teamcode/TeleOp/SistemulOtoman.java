@@ -37,12 +37,31 @@
         boolean override = false;
         double targetPosition, targetAngle;
         double target = 0;
+        int color = 0;
 
         double threshold = 0.68; // To Adjust
-        double threshold_far = 1.1; // To Adjust
-        double threshold_close = 0.68; // To Adjust
         private Follower follower;
         private int delay_shoot = 50;
+
+        // ---- SHOOTER PARAMETERS ----
+        double threshold_far = 1.1; // To Adjust
+        double threshold_close = 0.68; // To Adjust
+
+        int kp_far = 120;
+        int kp_close = 60;
+        private int delay_fast = 50;
+        private int delay_slow = 400;
+
+        private int delay_brat_slow = 250;
+        private int delay_brat_fast = 150;
+
+        double hood_offset_1 = 0;
+        double hood_offset_2 = 0.04;
+        double hood_offset_3 = 0.08;
+
+        // ----
+
+        int adjust = 0;
         private TelemetryManager telemetryM;
 
         private double InregisSpeed = 0;
@@ -51,14 +70,15 @@
         String mode = "drive";
         @Override
         public void runOpMode()  {
-            //Init phase
+            // ---- Follower Init Location ----
             follower = Constants.createFollower(hardwareMap);
-            //follower.setStartingPose(new Pose(PoseStorage.autoPose.getX()-72, PoseStorage.autoPose.getY()-72,PoseStorage.autoPose.getPose().getHeading()));
-            Pose pose = new Pose(72,72,180);
+            //Pose pose = new Pose(PoseStorage.autoPose.getX()-72, PoseStorage.autoPose.getY()-72,PoseStorage.autoPose.getPose().getHeading());
+            Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading());
             follower.setStartingPose(pose);
 
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
+            // ---- System Config ----
             servos = Servos.getInstance(hardwareMap , telemetry);
             motors = Motors.getInstance(hardwareMap);
             hardwareClass = HardwareClass.getInstance(hardwareMap);
@@ -67,6 +87,7 @@
             selectioner = Selectioner.getInstance(hardwareClass, telemetry);
             turret = Turret.getInstance(hardwareMap,telemetry);
 
+            // ---- Setting Motors ----
             hardwareClass.FL.setDirection(DcMotorSimple.Direction.REVERSE);
             hardwareClass.BL.setDirection(DcMotorSimple.Direction.REVERSE);
             motors.setRampCoefs();
@@ -75,6 +96,7 @@
 
             waitForStart();
 
+            // ---- Setup SubSys ----
             limelight.setPipeline(1);
             limelight.setup();
             limelight.start();
@@ -91,6 +113,9 @@
             }
 
             double distance = -1;
+            delay_shoot = delay_fast;
+            HardwareClass.bratDelay = delay_brat_fast;
+
             while(opModeIsActive()) {
                 follower.update();
                 switch(mode){
@@ -102,56 +127,63 @@
                             motors.setRampVelocityC(1000);
                         }
 
-                        // ---- SHOOTING ----
+                        // ---- SHOOTING CLOSE ----
                         if(gamepad1.right_bumper){
-                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(60,0,0,1.2);
+                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),color);
+                            motors.setCoefsMan(kp_close,0,0,1.2);
                             motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
                             threshold = threshold_close;
                             mode = "shoot_fast";
                         }
 
+                        // ---- SHOOTING FAR ----
                         if(gamepad1.left_bumper){
-                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(120,0,0,1.2);
+                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),color);
+                            motors.setCoefsMan(kp_far,0,0,1.2);
                             motors.setRampVelocityC((int)(getRPM(distance)) + 1000);// * 1.1
                             threshold = threshold_far;
                             mode = "shoot_fast";
                         }
 
+                        // ---- SHOOTING MODE ----
+
+                        if(gamepad1.share){
+                            delay_shoot = delay_slow;
+                            HardwareClass.bratDelay = delay_brat_slow;
+                        }
+
+                        if(gamepad1.options){
+                            delay_shoot = delay_fast;
+                            HardwareClass.bratDelay = delay_brat_fast;
+                        }
+
                         // ---- TURRET ----
-                        /*
+
+                        if (gamepad1.dpad_right){
+                            adjust += 2;
+                        }
+
+                        if (gamepad1.dpad_left){
+                            adjust -= 2;
+                        }
+
+                        if(gamepad1.dpad_up){
+                            follower.setPose(new Pose(72,72,180));
+                        }
+
                         if(gamepad1.y){
                             target = -1;
-                            handleTurret();
                         }
 
                         if(gamepad1.b){
                             target = 0;
-                            handleTurret();
+                            color = 0;
                         }
 
                         if(gamepad1.x){
                             target = 1;
-                            handleTurret();
+                            color = 1;
                         }
-
-                        if(gamepad1.dpad_up){
-                            follower.setPose(new Pose(144,144,180));
-                        }
-                        */
-
-
-                        // ---- SHOOT TEST ----
-                        if (gamepad1.a){
-                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
-                            motors.setCoefsMan(60,0,0,1.2);
-                            motors.setRampVelocityC((int)(getRPM(distance)));// * 1.1
-                            threshold = threshold_close;
-                            test_case = 1;
-                            mode = "test";
-                        }
-
 
                         //----- INTAKE ------
                         if(gamepad1.right_trigger > 0){
@@ -169,8 +201,8 @@
                         break;
                     }
                     case "shoot_fast":{
-                        // ---- TURRET ----
                         handleTurret();
+                        distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),color);
                         motors.intakeOn();
                         if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
                             if(threshold < 0.8){
@@ -178,10 +210,17 @@
                             }else{
                                 shoot_long();
                             }
-                            distance = limelight.getDistanceOD(follower.getPose().getX(),follower.getPose().getY(),0);
                             sleep(200);
                             motors.setCoefsMan(20,0,0,1.2);
-                            motors.setRampVelocityC((int)(0.33 * getRPM(distance)));
+                            motors.setRampVelocityC(1000);
+                            selectioner.resetServos();
+                            motors.intakeOff();
+                            mode = "drive";
+                        }
+
+                        if(gamepad1.right_trigger > 0){
+                            motors.setCoefsMan(20,0,0,1.2);
+                            motors.setRampVelocityC(1000);
                             selectioner.resetServos();
                             motors.intakeOff();
                             mode = "drive";
@@ -191,31 +230,13 @@
                         telemetry.update();
                         break;
                     }
-                    case "test":{
-
-                        if (motors.getVelocity() >= threshold * (int)(getRPM(distance)) && test_case == 1){
-                            telemetry.addData("Target RPM" , InregisSpeed);
-                            InregisSpeed = motors.getVelocity();
-                            Timer.reset();
-                            Timer.startTime();
-                            test_case = 2;
-                            shoot_one();
-                        }
-
-                        if(motors.getVelocity() >= InregisSpeed && test_case == 2){
-                            telemetry.addData("Time (ms)",Timer.milliseconds());
-                            mode = "drive";
-                        }
-                        telemetry.update();
-                        break;
-                    }
                 }
             }
         }
 
         public void handleTurret() {
             if (target == -1){
-                turret.goToPosition(0);
+                turret.goToPosition(adjust);
                 return;
             }
             double x = follower.getPose().getX();
@@ -244,7 +265,7 @@
             targetPosition = convertToNewRange(
                     targetAngle,
                     -Math.PI / 2, Math.PI / 2,
-                    -240, 240 // New Encoder Ticks
+                    -200, 200 // New Encoder Ticks
             );
 
             if(targetPosition > 200){
@@ -273,26 +294,17 @@
             return (int)r;
         }
 
-        static double getHood(double d) {
-            if (d < 130)
-                return (d - 100) * (9.0 / 30.0);
-            else if (d < 170)
-                return 9 - (d - 130) * (1.0 / 40.0);
-            else
-                return 6 + (d - 170) * (5.0 / 150.0);
-        }
-
         void shoot_short(){
             //Shoot First
-            HoodToPos(0);
+            HoodToPos(hood_offset_1);
             selectioner.rightServoUp();
             sleep(delay_shoot);
             //Shoot Second
-            HoodToPos(0.04);
+            HoodToPos(hood_offset_2);
             selectioner.leftServoUp();
             sleep(delay_shoot);
             //Shoot Third
-            HoodToPos(0.1);
+            HoodToPos(hood_offset_3);
             selectioner.topServoUp();
             HoodToPos(0);
         }

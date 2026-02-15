@@ -23,7 +23,7 @@
     //comment
 
     @Config
-    @TeleOp(name="Soare", group = "Solo")
+    //@TeleOp(name="Soare", group = "Solo")
     public class RotatieDupaSoare extends LinearOpMode {
         Servos servos = null;
         HardwareClass hardwareClass = null;
