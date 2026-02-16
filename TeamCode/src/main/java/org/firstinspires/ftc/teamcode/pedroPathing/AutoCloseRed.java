@@ -23,7 +23,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Auto Close Red" , group = "Test")
+//@Autonomous(name = "Auto Close Red" , group = "Test")
 public class AutoCloseRed extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.

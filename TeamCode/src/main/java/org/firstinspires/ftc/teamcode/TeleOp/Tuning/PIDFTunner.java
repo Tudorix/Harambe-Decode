@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Threads.Motors;
 //requires motor class!!!!!
 //I will change the tuner in future update!!
 
-@Config
+//@Config
 @TeleOp(name="PIDF Tunner", group = "Solo")
 public class PIDFTunner extends LinearOpMode {
     Servos servos = null;

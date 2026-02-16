@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.HardwareClass;
 
 
-@Autonomous(name = "Auto Far Red" , group = "Test")
+//@Autonomous(name = "Auto Far Red" , group = "Test")
 public class AutoFarRed extends OpMode {
     int target = 0;
     private final Pose startPose = new Pose(133.6, 86.95, Math.toRadians(180)); // Start Pose of our robot.

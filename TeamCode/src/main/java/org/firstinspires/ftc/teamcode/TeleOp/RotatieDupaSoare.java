@@ -10,6 +10,7 @@
     import com.qualcomm.robotcore.hardware.DcMotorSimple;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
+    import org.firstinspires.ftc.robotcore.external.Telemetry;
     import org.firstinspires.ftc.teamcode.HardwareClass;
     import org.firstinspires.ftc.teamcode.Threads.Holonomic;
     import org.firstinspires.ftc.teamcode.Threads.Limelight;
@@ -23,7 +24,7 @@
     //comment
 
     @Config
-    //@TeleOp(name="Soare", group = "Solo")
+    @TeleOp(name="Soare", group = "Solo")
     public class RotatieDupaSoare extends LinearOpMode {
         Servos servos = null;
         HardwareClass hardwareClass = null;
@@ -49,6 +50,12 @@
         private int delay_shoot = 300;
         private TelemetryManager telemetryM;
 
+        double goalHeight = 0;
+        double cameraHeight = 0;
+        double cameraAngle = 0;
+        double minAngleLL = 0;
+        double adjust = 0;
+
         private double InregisSpeed = 0;
         int test_case = 1;
 
@@ -57,7 +64,7 @@
         public void runOpMode()  {
             //Init phase
             follower = Constants.createFollower(hardwareMap);
-            Pose pose = new Pose(72,72,180);
+            Pose pose = new Pose(PoseStorage.autoPose.getX() - 72, PoseStorage.autoPose.getY() - 72,PoseStorage.autoPose.getPose().getHeading());
             follower.setStartingPose(pose);
 
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -90,84 +97,46 @@
             if(!turret.getStatus()){
                 turret.setup();
             }
-            turret.resetMotor();
-
-            //servos.turretGT(0.54);
 
             double distance = -1;
             while(opModeIsActive()) {
                 follower.update();
                 switch(mode){
                     case "drive":{
-
-                        // ---- TURRET ----
-                        if(gamepad1.y){
-                            target = -1;
-                        }
-
-                        if(gamepad1.b){
-                            target = 0;
-                        }
-
-                        telemetry.addData("Pose: " , follower.getPose());
+                        telemetry.addData("Distance: " , getDistance());
                         telemetry.update();
                         handleTurret();
-
-                        HardwareClass.redScoreX = RED_X;
-                        HardwareClass.redScoreY = RED_Y;
-
                         break;
                     }
                 }
             }
         }
 
-        public void handleTurret() {
-            if (target == -1){
-                turret.goToPosition(0);
-                return;
+        public void handleTurret(){
+            try{
+                double x = limelight.getXPos();
+                if(Math.abs(x) < 2){
+                    adjust += (int)(x / 2);
+                }
+                if(adjust < -150) adjust = -150;
+                if(adjust > 200) adjust = 200;
+                turret.goToPosition(adjust);
+            }catch (Exception ex){
+                adjust = 0;
+                turret.goToPosition(adjust);
             }
-            double x = follower.getPose().getX();
-            double y = follower.getPose().getY();
-            double dx=0,dy=0;
+        }
 
-
-            if(target == -1){
-                dx = -72 - x;
-                dy = 0 - y;
+        public double getDistance(){
+            try{
+                double Ty = limelight.getYPos();
+                double dh = goalHeight - cameraHeight;
+                double thetaFin = Math.abs(minAngleLL - cameraAngle);
+                double du = Math.tan(Math.abs(Ty - thetaFin));
+                return  dh / du;
+            }catch (Exception ex){
+                return 215;
             }
-            if(target == 1) {
-                dx = HardwareClass.blueScoreX - x;
-                dy = HardwareClass.blueScoreY - y;
-            }
-
-            if(target == 0) {
-                dx = HardwareClass.redScoreX - x;
-                dy = HardwareClass.redScoreY - y;
-            }
-            double goalAngle = Math.atan2(dy, dx);
-            double thetaR = follower.getPose().getHeading();
-
-            targetAngle = goalAngle - thetaR;
-            targetAngle = Math.atan2(Math.sin(targetAngle), Math.cos(targetAngle));
-            targetPosition = convertToNewRange(
-                    targetAngle,
-                    -Math.PI / 2, Math.PI / 2,
-                    -200, 200 // New Encoder Ticks
-            );
-
-            if(targetPosition > 200){
-                targetPosition = 200;
-            }
-
-            if(targetPosition < -200){
-                targetPosition = -200;
-            }
-
-            //targetPosition = Math.min(Math.max(targetPosition,0.25),0.75);
-            telemetry.addData("Target Pos" , targetPosition);
-            telemetry.update();
-            turret.goToPosition(targetPosition);
         }
 
         public double convertToNewRange(double value,

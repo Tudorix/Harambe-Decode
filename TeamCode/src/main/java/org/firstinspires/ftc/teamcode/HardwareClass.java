@@ -25,9 +25,9 @@ public class HardwareClass {
     public RevColorSensorV3 colorTop, colorBotR, colorBotL; //selection sensors
     public RevColorSensorV3 colorTop2, colorBotR2, colorBotL2;
     public static double startX = 64 ,startY = 0, startAngle=180;//Inch
-    public static double redX = -57, redY = 57;
-    public static double redScoreX = 135, redScoreY = 135;       //65   62
-    public static double blueX = -57, blueY = -57;
+    public static double redX = 132, redY = 132;
+    public static double redScoreX = 135, redScoreY = 135;//65   62
+    public static double blueX = 8, blueY = 8;
     public static double blueScoreX = 135, blueScoreY = 9;
 
     public static int bratDelay = 180,bratDownDelay = 150; // milisecunde

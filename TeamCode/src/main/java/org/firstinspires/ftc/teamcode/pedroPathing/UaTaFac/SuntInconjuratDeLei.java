@@ -68,7 +68,7 @@ public class SuntInconjuratDeLei extends OpMode {
 
     int High_P = 60 , Low_P = 20;
 
-    int delay_shoot = 150;
+    int delay_shoot = 180;
 
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
@@ -307,6 +307,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 break;
             case 15:
                 if(!follower.isBusy()) {
+                    turret.goToPosition(0);
                     follower.followPath(Park,true);
                     setPathState(-1);
                 }
@@ -378,6 +379,7 @@ public class SuntInconjuratDeLei extends OpMode {
 
         turret = Turret.getInstance(hardwareMap, telemetry);
         turret.setup();
+        turret.resetMotor();
 
         //servos.hoodMove(1);
         follower.setStartingPose(startPose);
@@ -439,7 +441,7 @@ public class SuntInconjuratDeLei extends OpMode {
     void shoot_short(){
         //Shoot First
         HoodToPos(0);
-        selectioner.rightServoUp();
+        selectioner.topServoUp();
         sleep(delay_shoot);
         //Shoot Second
         HoodToPos(0.01);
@@ -447,7 +449,7 @@ public class SuntInconjuratDeLei extends OpMode {
         sleep(delay_shoot);
         //Shoot Third
         HoodToPos(0.02);
-        selectioner.topServoUp();
+        selectioner.rightServoUp();
         HoodToPos(0);
     }
 

@@ -9,7 +9,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 
-@TeleOp
+//@TeleOp
 @Config
 public class colorSensorTuning extends OpMode {
 

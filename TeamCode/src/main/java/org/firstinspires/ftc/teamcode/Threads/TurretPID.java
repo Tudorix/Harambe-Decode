@@ -62,8 +62,8 @@ public class TurretPID implements Runnable{
     public boolean start(){
         try {
             if (this.thread == null || !this.thread.isAlive()) {
-                telemetry.addLine("Trying to start");
-                telemetry.update();
+                //telemetry.addLine("Trying to start");
+                //telemetry.update();
                 this.thread = new Thread(this);
                 this.running = true;
                 this.current = motor1.getCurrentPosition();
@@ -75,8 +75,8 @@ public class TurretPID implements Runnable{
                 return false;
             }
         }catch (IllegalThreadStateException e){
-            this.telemetry.addData(this.threadName + " -> thread start error: ",e);
-            telemetry.update();
+            //this.telemetry.addData(this.threadName + " -> thread start error: ",e);
+            //telemetry.update();
             return false;
         }
     }
@@ -152,9 +152,9 @@ public class TurretPID implements Runnable{
         while(running) {
             ElapsedTime timer = new ElapsedTime();
             timer.reset();
-            while ((Math.abs(error) > 10 || repetitions < 40) && stop == 1) {
+            while ((Math.abs((int)(error)) > 10 || repetitions < 40) && stop == 1) {
 
-                current = motor1.getCurrentPosition();
+                current = (int)(motor1.getCurrentPosition());
 
                 error = reference - current;
                 derivative = (error - lastError) / timer.seconds();
@@ -167,8 +167,9 @@ public class TurretPID implements Runnable{
                 motor1.setPower(power);
 
 
-//                telemetry.addData(motorName + " target", reference);
-//                telemetry.addData(motorName + " pos", current);
+               //telemetry.addData(motorName + " target", reference);
+               //telemetry.addData(motorName + " pos", current);
+               //telemetry.addData(motorName + " error", error);
 //
 //                TelemetryPacket tp = new TelemetryPacket();
 //                tp.put("pos", current);
@@ -179,7 +180,7 @@ public class TurretPID implements Runnable{
 //                        tp
 //                );
 
-//                telemetry.update();
+                //telemetry.update();
                 lastError = error;
                 timer.reset();
                 try { Thread.sleep(10); } catch (InterruptedException ignored) {}  // 10 mill pentru siguranta
@@ -189,6 +190,12 @@ public class TurretPID implements Runnable{
 //            telemetry.update();
             repetitions++;
         }
+    }
+
+    public double convertToNewRange(double value,
+                                    double oldMin, double oldMax,
+                                    double newMin, double newMax) {
+        return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
     }
 
     public void activetePower(){

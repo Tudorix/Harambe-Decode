@@ -24,7 +24,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Auto Close Blue" , group = "Test")
+//@Autonomous(name = "Auto Close Blue" , group = "Test")
 public class AutoCloseBlue extends OpMode {
 
     int target = 1;

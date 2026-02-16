@@ -11,18 +11,21 @@ import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Turret;
 import org.firstinspires.ftc.teamcode.Threads.TurretPID;
 
-@TeleOp
+@TeleOp(name="Reset Turret", group = "Solo")
 @Config
 public class TurretCheck extends OpMode {
 
     public DcMotorEx motor = null;
+    public DcMotorEx FR = null;
     public static String motorName = "TR";
+    public static String FR_Name = "FR";
 
-    public static double kp = 0.01, ki = 0, kd = 0.005;
+    public static double kp = 0.01, ki = 0, kd = 0.001;
     public static double target = 0;
 
     Turret turret = null;
     public static double Position = 0;
+    double adjust = 0;
 
     @Override
     public void init() {
@@ -30,17 +33,15 @@ public class TurretCheck extends OpMode {
         this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //turret = Turret.getInstance(hardwareMap,telemetry);
-        //turret.setup();
-        //turret.resetMotor();
+        turret = Turret.getInstance(hardwareMap,telemetry);
+        turret.setup();
+        turret.resetMotor();
     }
 
     @Override
     public void loop() {
-
-        //turret.setPID(kp,ki,kd);
-        //turret.goToPosition(target);
-        telemetry.addData("Position" , motor.getCurrentPosition());
         telemetry.update();
+        turret.setPID(kp,ki,kd);
+        turret.goToPosition(target);
     }
 }
