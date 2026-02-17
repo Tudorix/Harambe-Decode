@@ -51,29 +51,37 @@
         double minAngleLL = 0;
 
         // ---- SHOOTER PARAMETERS ----
-        double threshold_far = 1; // To Adjust
-        double threshold_close = 0.73; // To Adjust
+        double threshold_far = 0.95; // To Adjust
+        double threshold_close = 0.68; // To Adjust
+        double threshold_mid = 0.8; // To Adjust
 
         int kp_far = 120;
         int kp_close = 60;
+        int kp = 60;
         private int delay_fast = 100;
         private int delay_slow = 400;
 
         private int delay_brat_slow = 250;
         private int delay_brat_fast = 200;
 
-        double hood_offset_1 = 0.1;
-        double hood_offset_2 = 0.05;
-        double hood_offset_3 = 0.0;
+        double hood_offset_1 = 0.2;
+        double hood_offset_2 = 0.09;
+        double hood_offset_3 = 0.02;
 
         // ----
 
+        int putere_far = 3800;
+        int putere_close = 2500;
+        int putere_mid = 2800;
+        int putere;
+
         // ---- Goal Location ----
 
-        public static int RED_X = 65, RED_Y = -130;
+        public static int RED_X = 90, RED_Y = 100;
         public static int BLUE_X = 70, BLUE_Y = 0;
 
-        int adjust = 0;
+        double adjust = 0;
+        double lastTx = 0;
         private TelemetryManager telemetryM;
 
         private double InregisSpeed = 0;
@@ -109,16 +117,14 @@
             waitForStart();
 
             // ---- Setup SubSys ----
-            limelight.setPipeline(1);
-            limelight.setup();
-            limelight.start();
+            limelight.setPipeline(4);
 
             selectioner.resetServos();
 
             if(!turret.getStatus()){
                 turret.setup();
             }
-            //turret.resetMotor();
+            turret.resetMotor();
 
             if(!holonomic.getStatus()){
                 holonomic.start();
@@ -137,6 +143,26 @@
 
             while(opModeIsActive()) {
                 follower.update();
+                distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),0);
+
+                if(distance < 200){
+                    putere = putere_close;
+                    threshold = threshold_close;
+                    kp = kp_close;
+                }else if(distance >= 200 && distance < 280){
+                    putere = putere_mid;
+                    threshold = threshold_mid;
+                    kp = kp_close;
+                }else if(distance >= 280){
+                    putere = putere_far;
+                    threshold = threshold_far;
+                    kp = kp_far;
+                }
+
+                telemetry.addData("Distance: " , distance);
+                telemetry.addData("Putere: " , putere);
+                telemetry.update();
+
                 switch(mode){
                     case "drive":{
                         // ---- CONST SPEEEEEED ----
@@ -147,16 +173,8 @@
 
                         // ---- SHOOTING CLOSE ----
                         if(gamepad1.right_bumper){
-                            motors.setCoefsMan(kp_close,0,0,1.2);
-                            threshold = threshold_close;
+                            motors.setCoefsMan(kp,0,0,1.2);
                             mode = "shoot_fast";
-                        }
-
-                        // ---- SHOOTING FAR ----
-                        if(gamepad1.left_bumper){
-                           motors.setCoefsMan(kp_far,0,0,1.2);
-                           threshold = threshold_far;
-                           mode = "shoot_fast";
                         }
 
                         // ---- SHOOTING MODE ----
@@ -175,17 +193,25 @@
 
                         if(gamepad1.y){
                             adjust = 0;
+                            target = -1;
                             turret.goToPosition(adjust);
                         }
 
                         if (gamepad1.dpad_right){
                             target = -1;
                             adjust += 2;
+                            turret.goToPosition(adjust);
                         }
 
                         if (gamepad1.dpad_left){
                             target = -1;
                             adjust -= 2;
+                            turret.goToPosition(adjust);
+                        }
+
+                        if (gamepad1.x){
+                            Pose pose1 = new Pose(72,72,90);
+                            follower.setPose(pose1);
                         }
 
                        if(gamepad1.a){
@@ -207,22 +233,16 @@
                             motors.intakeOff();
                         }
 
-                        telemetry.addData("Distance: " , getDistance());
-                        telemetry.update();
-
                         break;
                     }
                     case "shoot_fast":{
-                        if(target == 1){
-                            handleTurret();
-                        }
+                        handleLL();
 
-                        distance = getDistance();
-                        motors.setRampVelocityC((int)(getRPM(distance)));
+                        motors.setRampVelocityC(putere);
                         motors.intakeOn();
 
-                        if (motors.getVelocity() > (int)(threshold * getRPM(distance))){
-                            if(threshold < 0.8){
+                        if (motors.getVelocity() > (int)(threshold * putere)){
+                            if(threshold <= 0.8){
                                 shoot_short();
                             }else{
                                 shoot_long();
@@ -238,11 +258,13 @@
                         if (gamepad1.dpad_right){
                             target = -1;
                             adjust += 2;
+                            turret.goToPosition(adjust);
                         }
 
                         if (gamepad1.dpad_left){
                             target = -1;
                             adjust -= 2;
+                            turret.goToPosition(adjust);
                         }
 
                         if(gamepad1.dpad_up){
@@ -256,9 +278,6 @@
                             motors.intakeOff();
                             mode = "drive";
                         }
-
-                        telemetry.addData("Distance: " , getDistance());
-                        telemetry.update();
                         break;
                     }
                 }
@@ -266,22 +285,72 @@
         }
 
         // HandleTurret cu CAMERA
-        public void handleTurret(){
+        public void handleLL(){
             try{
-                double x = limelight.getXPos();
-                if(Math.abs(x) > 2){
-                    adjust -= (int)(x / 5);
+                if(limelight.checkResults()){
+                    double tx = limelight.getXPos();
+                    if(Math.abs(tx) > 3){
+                        adjust -= (int)(tx * 0.4);
+                        lastTx = tx;
+                    }
+                }else{
+                    if(lastTx < 0){
+                        adjust += 5;
+                    }else{
+                        adjust -= 5;
+                    }
                 }
                 if(adjust < -150) adjust = -150;
                 if(adjust > 200) adjust = 200;
                 turret.goToPosition(adjust);
+
             }catch (Exception ex){
                 adjust = 0;
                 turret.goToPosition(adjust);
             }
         }
 
-       // Distanta cu TY
+        public void handleTurret() {
+            double x = follower.getPose().getX();
+            double y = follower.getPose().getY();
+            double dx=0,dy=0;
+
+            dx = HardwareClass.redScoreX - x;
+            dy = HardwareClass.redScoreY - y;
+            /*
+            if(target == -1){
+                dx = -72 - x;
+                dy = 0 - y;
+            }
+            if(target == 1) {
+                dx = HardwareClass.blueScoreX - x;
+                dy = HardwareClass.blueScoreY - y;
+            }
+
+            if(target == 0) {
+                dx = HardwareClass.redScoreX - x;
+                dy = HardwareClass.redScoreY - y;
+            }
+            *
+             */
+            double goalAngle = Math.atan2(dy, dx);
+            double thetaR = follower.getPose().getHeading();
+
+            targetAngle = goalAngle - thetaR;
+            targetAngle = Math.atan2(Math.sin(targetAngle), Math.cos(targetAngle));
+            targetPosition = convertToNewRange(
+                    targetAngle,
+                    -Math.PI / 2, Math.PI / 2,
+                    -150, 200
+            );
+
+            targetPosition = Math.min(Math.max(targetPosition,-150),200);
+            adjust = targetPosition;
+            turret.goToPosition(targetPosition);
+        }
+
+
+        // Distanta cu TY
         public double getDistance(){
             try{
                 double Ty = limelight.getYPos();

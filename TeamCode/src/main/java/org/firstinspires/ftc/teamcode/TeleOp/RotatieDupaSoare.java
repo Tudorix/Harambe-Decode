@@ -36,8 +36,8 @@
 
         ElapsedTime Timer = null;
 
-        public static int RED_X = 135;
-        public static int RED_Y = 135;
+        public static int RED_X = 90, RED_Y = 100;
+        public static int BLUE_X = 70, BLUE_Y = 0;
 
         boolean override = false;
         double targetPosition, targetAngle;
@@ -66,7 +66,7 @@
         public void runOpMode()  {
             //Init phase
             follower = Constants.createFollower(hardwareMap);
-            Pose pose = new Pose(PoseStorage.autoPose.getX() - 72, PoseStorage.autoPose.getY() - 72,PoseStorage.autoPose.getPose().getHeading());
+            Pose pose = new Pose(72, 72,90);
             follower.setStartingPose(pose);
 
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
@@ -96,39 +96,111 @@
                 holonomic.start();
             }
 
+            HardwareClass.redScoreX = RED_X;
+            HardwareClass.redScoreY = RED_Y;
+            HardwareClass.blueScoreX = BLUE_X;
+            HardwareClass.blueScoreY = BLUE_Y;
+
             if(!turret.getStatus()){
                 turret.setup();
                 turret.resetMotor();
             }
+
+            int mod = 0;
 
             double distance = -1;
             while(opModeIsActive()) {
                 follower.update();
                 switch(mode){
                     case "drive":{
-                        telemetry.addData("Distance: " , getDistance());
+                        HardwareClass.redScoreX = RED_X;
+                        HardwareClass.redScoreY = RED_Y;
+                        HardwareClass.blueScoreX = BLUE_X;
+                        HardwareClass.blueScoreY = BLUE_Y;
+                        telemetry.addData("Pose" , follower.getPose());
                         telemetry.update();
-                        handleTurret();
+
+                        if(gamepad1.a){
+                            mod = 0;
+                        }
+
+                        if(gamepad1.b){
+                            mod = 1;
+                        }
+                        if(mod == 0){
+                            handleTurret();
+                        }
+
+                        if(mod == 1){
+                            handleLL();
+                        }
+
                         break;
                     }
                 }
             }
         }
 
-        public void handleTurret(){
+        public void handleLL(){
             try{
-                double x = limelight.getXPos();
-                if(Math.abs(x) > 2){
-                    adjust -= (int)(x / 5);
+                if(limelight.checkResults()){
+                    double tx = limelight.getXPos();
+                    if(Math.abs(tx) > 2){
+                        adjust -= (int)(tx * 0.45);
+                        lastTx = tx;
+                    }
+                }else{
+                    if(lastTx < 0){
+                        adjust += 5;
+                    }else{
+                        adjust -= 5;
+                    }
                 }
                 if(adjust < -150) adjust = -150;
                 if(adjust > 200) adjust = 200;
                 turret.goToPosition(adjust);
+
             }catch (Exception ex){
                 adjust = 0;
                 turret.goToPosition(adjust);
             }
         }
+
+        public void handleTurret() {
+            double x = follower.getPose().getX();
+            double y = follower.getPose().getY();
+            double dx=0,dy=0;
+
+
+            if(target == -1){
+                dx = -72 - x;
+                dy = 0 - y;
+            }
+            if(target == 1) {
+                dx = HardwareClass.blueScoreX - x;
+                dy = HardwareClass.blueScoreY - y;
+            }
+
+            if(target == 0) {
+                dx = HardwareClass.redScoreX - x;
+                dy = HardwareClass.redScoreY - y;
+            }
+            double goalAngle = Math.atan2(dy, dx);
+            double thetaR = follower.getPose().getHeading();
+
+            targetAngle = goalAngle - thetaR;
+            targetAngle = Math.atan2(Math.sin(targetAngle), Math.cos(targetAngle));
+            targetPosition = convertToNewRange(
+                    targetAngle,
+                    -Math.PI / 2, Math.PI / 2,
+                    -150, 200
+            );
+
+            targetPosition = Math.min(Math.max(targetPosition,-150),200);
+            adjust = targetPosition;
+            turret.goToPosition(targetPosition);
+        }
+
 
         public double getDistance(){
             try{

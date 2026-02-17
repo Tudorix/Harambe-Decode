@@ -183,7 +183,7 @@ public class TurretPID implements Runnable{
                 //telemetry.update();
                 lastError = error;
                 timer.reset();
-                try { Thread.sleep(10); } catch (InterruptedException ignored) {}  // 10 mill pentru siguranta
+                //try { Thread.sleep(10); } catch (InterruptedException ignored) {}  // 10 mill pentru siguranta
             }
             current = motor1.getCurrentPosition();
 //            telemetry.addData(motorName + " pos", current);

@@ -31,15 +31,19 @@ public class SuntInconjuratDeLei extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.
     private final Pose scorePose = new Pose(46.1, 97.7  , Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose1 = new Pose(56.1,97.7,Math.toRadians(90)); // scorePose 1 doar cu turreta
+    private final Pose scorePose1 = new Pose(56.1,103,Math.toRadians(90)); // scorePose 1 doar cu turreta
     private final Pose pickup1Pose = new Pose(58, 99, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1_3Pose = new Pose(55, 118, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2Pose = new Pose(82, 99   , Math.toRadians(90)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose aux_2 = new Pose(82, 110   , Math.toRadians(90)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup2_3Pose = new Pose(78,128,Math.toRadians(90));
     private final Pose parkPose = new Pose(40.7, 91, 2.116); // Park // Park
-    private final Pose unloadPose = new Pose(80,132,Math.toRadians(118));
-    private final Pose aux = new Pose (77 , 120   , Math.toRadians(90));
+    private final Pose unloadPose = new Pose(83,132,Math.toRadians(118));
+    private final Pose aux = new Pose (77 , 117   , Math.toRadians(90));
+
+    double hood_offset_1 = 0.1;
+    double hood_offset_2 = 0.05;
+    double hood_offset_3 = 0;
     double shoots = 0;
     private Follower follower;
     private final ElapsedTime delay = new ElapsedTime();
@@ -64,11 +68,11 @@ public class SuntInconjuratDeLei extends OpMode {
 
     double Treshold = 0.73;
     int REP = 3000;
-    double TargetRPM = 1850;
+    double TargetRPM = 1950;
 
     int High_P = 60 , Low_P = 20;
 
-    int delay_shoot = 180;
+    int delay_shoot = 200;
 
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
@@ -80,7 +84,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .addParametricCallback(0,() -> {
                     startPresiune();
                     selectioner.resetServos();
-                    turret.goToPosition(20);
+                    turret.goToPosition(15);
                 })
                 .build();
 
@@ -98,7 +102,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(pickup2_3Pose.getHeading(), aux_2.getHeading())
                 .addParametricCallback(0.4,() -> {
                     motors.intakeReverse();
-                    turret.goToPosition(80);
+                    turret.goToPosition(55);
                 })
                 .addPath(new BezierLine(aux_2, scorePose1))
                 .setLinearHeadingInterpolation(aux_2.getHeading(), scorePose1.getHeading())
@@ -119,9 +123,9 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1_3Pose.getHeading())
                 .addPath(new BezierLine(pickup1_3Pose, pickup1Pose))
                 .setLinearHeadingInterpolation(pickup1_3Pose.getHeading(), pickup1Pose.getHeading())
-                .addParametricCallback(0.3,() -> {
+                .addParametricCallback(0.6,() -> {
                     motors.intakeReverse();
-                    turret.goToPosition(80);
+                    turret.goToPosition(45);
                 })
                 .addPath(new BezierLine(pickup1Pose, scorePose1))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose1.getHeading())
@@ -166,6 +170,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 .setLinearHeadingInterpolation(scorePose1.getHeading(), parkPose.getHeading())
                 .addParametricCallback(0,() -> {
                     stopPresiune();
+                    turret.goToPosition(0);
                     motors.intakeOff();
                 })
                 .build();
@@ -307,7 +312,6 @@ public class SuntInconjuratDeLei extends OpMode {
                 break;
             case 15:
                 if(!follower.isBusy()) {
-                    turret.goToPosition(0);
                     follower.followPath(Park,true);
                     setPathState(-1);
                 }
@@ -440,16 +444,16 @@ public class SuntInconjuratDeLei extends OpMode {
 
     void shoot_short(){
         //Shoot First
-        HoodToPos(0);
-        selectioner.topServoUp();
+        HoodToPos(hood_offset_1);
+        selectioner.rightServoUp();
         sleep(delay_shoot);
         //Shoot Second
-        HoodToPos(0.01);
+        HoodToPos(hood_offset_2);
         selectioner.leftServoUp();
         sleep(delay_shoot);
         //Shoot Third
-        HoodToPos(0.02);
-        selectioner.rightServoUp();
+        HoodToPos(hood_offset_3);
+        selectioner.topServoUp();
         HoodToPos(0);
     }
 
