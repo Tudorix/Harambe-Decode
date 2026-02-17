@@ -29,6 +29,8 @@ public class Selectioner{
     private Telemetry telemetry;
     int brat1up, brat2up, brat3up;
 
+    int delayMic = 100, delayMedium = 200, BigDelay = 300;
+
     public Selectioner(HardwareClass hardwareClass, Telemetry telemetry) {
         selectTop = hardwareClass.selectTop;   // 1
         selectBotL = hardwareClass.selectBotL; // 2
@@ -46,11 +48,22 @@ public class Selectioner{
     }
 
 
-    public void printesaDinDubai(int pos){  //deprecated way of shooting
+    public void printesaDinDubai(int pos){
         if(pos<0) {
             unloadBalls();
             return;
         }
+        if(pos==1) shootGreen(); else shootPurple();
+        sleep(HardwareClass.bratDelay + delayMedium);
+        if(pos==2) shootGreen(); else shootPurple();
+        sleep(HardwareClass.bratDelay + delayMedium);
+        if(pos==3) shootGreen(); else shootPurple();
+        sleep(HardwareClass.bratDelay + delayMedium);
+        //   surplus
+        if(getPurplePos()>0)
+            shootPurple();
+        if(getGreenPos()>0)
+            shootGreen();
     }
 
     public void unloadBalls(){  //
@@ -87,10 +100,6 @@ public class Selectioner{
         topServoUp();
     }
 
-    public int getOrder(){
-        return 0;
-    }
-
     public void topServoUp() {
         selectTop.setPosition(HardwareClass.selectTopHIGH);
         brat1up = 1;
@@ -119,6 +128,7 @@ public class Selectioner{
     }
 
     public int getPurplePos() {
+        checkColors();
         if(resultTop == Color.PURPLE) {
             return 1;
         } else if(resultBotL == Color.PURPLE) {
@@ -130,6 +140,7 @@ public class Selectioner{
     }
 
     public int getGreenPos() {
+        checkColors();
         if(resultTop == Color.GREEN) {
             return 1;
         } else if(resultBotL == Color.GREEN) {
@@ -138,6 +149,31 @@ public class Selectioner{
             return 3;
         }
         return -1;
+    }
+
+    public void shootPurple() {
+        if(resultTop == Color.PURPLE) {
+            resultTop = Color.INVALID;
+            topServoUp();
+        } else if(resultBotL == Color.PURPLE) {
+            resultBotL = Color.INVALID;
+            leftServoUp();
+        } else if(resultBotR == Color.PURPLE) {
+            resultBotR = Color.INVALID;
+            rightServoUp();
+        }
+    }
+    public void shootGreen() {
+        if(resultTop == Color.PURPLE) {
+            resultTop = Color.INVALID;
+            topServoUp();
+        } else if(resultBotL == Color.PURPLE) {
+            resultBotL = Color.INVALID;
+            leftServoUp();
+        } else if(resultBotR == Color.PURPLE) {
+            resultBotR = Color.INVALID;
+            rightServoUp();
+        }
     }
 
     public void telemetry() {
