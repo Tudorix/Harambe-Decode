@@ -50,10 +50,10 @@
         private int delay_shoot = 300;
         private TelemetryManager telemetryM;
 
-        double goalHeight = 0;
-        double cameraHeight = 0;
-        double cameraAngle = 0;
-        double minAngleLL = 0;
+        double goalHeight = 74;
+        double cameraHeight = 29;
+        double cameraAngle = 20;
+        double minAngleLL = 21;
         double adjust = 0;
 
         private double InregisSpeed = 0;
@@ -86,9 +86,9 @@
 
             waitForStart();
 
-            limelight.setPipeline(1);
-            limelight.setup();
-            limelight.start();
+            //limelight.setup();
+            //limelight.start();
+            limelight.setPipeline(4);
 
             if(!holonomic.getStatus()){
                 holonomic.start();
@@ -96,6 +96,7 @@
 
             if(!turret.getStatus()){
                 turret.setup();
+                turret.resetMotor();
             }
 
             double distance = -1;
@@ -115,8 +116,8 @@
         public void handleTurret(){
             try{
                 double x = limelight.getXPos();
-                if(Math.abs(x) < 2){
-                    adjust += (int)(x / 2);
+                if(Math.abs(x) > 2){
+                    adjust -= (int)(x / 5);
                 }
                 if(adjust < -150) adjust = -150;
                 if(adjust > 200) adjust = 200;

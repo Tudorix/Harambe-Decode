@@ -173,6 +173,11 @@
 
                         // ---- TURRET ----
 
+                        if(gamepad1.y){
+                            adjust = 0;
+                            turret.goToPosition(adjust);
+                        }
+
                         if (gamepad1.dpad_right){
                             target = -1;
                             adjust += 2;
@@ -183,7 +188,7 @@
                             adjust -= 2;
                         }
 
-                       if(gamepad1.dpad_up){
+                       if(gamepad1.a){
                            target = 1;
                        }
 
@@ -261,11 +266,11 @@
         }
 
         // HandleTurret cu CAMERA
-       public void handleTurret(){
+        public void handleTurret(){
             try{
                 double x = limelight.getXPos();
-                if(Math.abs(x) < 2){
-                    adjust += (int)x;
+                if(Math.abs(x) > 2){
+                    adjust -= (int)(x / 5);
                 }
                 if(adjust < -150) adjust = -150;
                 if(adjust > 200) adjust = 200;
@@ -274,7 +279,7 @@
                 adjust = 0;
                 turret.goToPosition(adjust);
             }
-       }
+        }
 
        // Distanta cu TY
         public double getDistance(){
