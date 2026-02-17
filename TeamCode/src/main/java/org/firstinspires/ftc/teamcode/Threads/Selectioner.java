@@ -27,7 +27,6 @@ public class Selectioner{
     private volatile Color resultTop, resultBotR, resultBotL;
     public boolean ballsfull = true;
     private Telemetry telemetry;
-    int brat1up, brat2up, brat3up;
 
     int delayMic = 100, delayMedium = 200, BigDelay = 300;
 
@@ -102,7 +101,6 @@ public class Selectioner{
 
     public void topServoUp() {
         selectTop.setPosition(HardwareClass.selectTopHIGH);
-        brat1up = 1;
         sleep(HardwareClass.bratDelay);
         selectTop.setPosition(HardwareClass.selectTopLOW);
     }
@@ -115,14 +113,12 @@ public class Selectioner{
 
     public void leftServoUp(){
         selectBotL.setPosition(HardwareClass.selectBotLHIGH);
-        brat2up = 1;
         sleep(HardwareClass.bratDelay);
         selectBotL.setPosition(HardwareClass.selectBotLLOW);
     }
 
     public void rightServoUp(){
         selectBotR.setPosition(HardwareClass.selectBotRHIGH);
-        brat3up = 1;
         sleep(HardwareClass.bratDelay);
         selectBotR.setPosition(HardwareClass.selectBotRLOW);
     }
@@ -177,9 +173,6 @@ public class Selectioner{
     }
 
     public void telemetry() {
-        telemetry.addData("Top status:", brat1up);
-        telemetry.addData("Left status:", brat2up);
-        telemetry.addData("Right status:", brat3up);
         telemetry.addData("Top Color", resultTop);
         telemetry.addData("Right Color", resultBotR);
         telemetry.addData("Left Color:", resultBotL);
