@@ -59,6 +59,8 @@
         private double InregisSpeed = 0;
         int test_case = 1;
 
+        double P_GAIN = 0,D_GAIN = 0, lastTx, turretAngleDeg, frequency = 50;
+
         String mode = "drive";
         @Override
         public void runOpMode()  {
@@ -139,6 +141,23 @@
                 return 215;
             }
         }
+
+        public double checkAprilTagPosPD() { // nu stiu daca merge, trebuie calibrate valorile
+            if (limelight.checkResults()) {
+                double tx = limelight.getXPos();
+                if (Math.abs(tx) < 2) {
+                    tx = 0;
+                }
+                double p = P_GAIN * tx;
+                double d = D_GAIN * (tx - lastTx) / (1.0/frequency);
+                lastTx = tx;
+                double deltaDeg = -(p + d);
+                turretAngleDeg += deltaDeg;
+                turretAngleDeg = Math.max(-150, Math.min(200, turretAngleDeg));   //check clamping !!!
+            }
+            return convertToNewRange(turretAngleDeg,-50,50,-150,200);   //check min/max !!!
+        }
+
 
         public double convertToNewRange(double value,
                                         double oldMin, double oldMax,
