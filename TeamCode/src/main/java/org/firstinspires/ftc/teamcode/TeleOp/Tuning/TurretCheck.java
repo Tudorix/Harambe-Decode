@@ -17,7 +17,7 @@ public class TurretCheck extends OpMode {
 
     public DcMotorEx motor = null;
     public DcMotorEx FR = null;
-    public static String motorName = "TR";
+    public static String motorName = "Ramp2";
     public static String FR_Name = "FR";
 
     public static double kp = 0.01, ki = 0, kd = 0.001;
@@ -25,23 +25,23 @@ public class TurretCheck extends OpMode {
 
     Turret turret = null;
     public static double Position = 0;
-    double adjust = 0;
+    public static double adjust = 0;
 
     @Override
     public void init() {
         this.motor = hardwareMap.get(DcMotorEx.class, motorName);
-        this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //this.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         turret = Turret.getInstance(hardwareMap,telemetry);
-        turret.setup();
+        //turret.setup();
         turret.resetMotor();
     }
 
     @Override
     public void loop() {
+        motor.setPower(adjust);
+        telemetry.addData("Position", motor.getCurrentPosition());
         telemetry.update();
-        turret.setPID(kp,ki,kd);
-        turret.goToPosition(target);
     }
 }

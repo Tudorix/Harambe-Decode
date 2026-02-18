@@ -70,15 +70,18 @@
 
         // ----
 
-        int putere_far = 3800;
+        int putere_far = 3000;
         int putere_close = 2500;
         int putere_mid = 2800;
         int putere;
 
         // ---- Goal Location ----
 
-        public static int RED_X = 90, RED_Y = 100;
-        public static int BLUE_X = 70, BLUE_Y = 0;
+        public static int RED_X = 120, RED_Y = 160;
+        public static int BLUE_X = 0, BLUE_Y = 100;
+
+        public int turret_max = 0;
+        public int turret_min = -357;
 
         double adjust = 0;
         double lastTx = 0;
@@ -86,13 +89,14 @@
 
         private double InregisSpeed = 0;
         int test_case = 1;
+        int goal = 0;
 
         String mode = "drive";
         @Override
         public void runOpMode()  {
             // ---- Follower Init Location ----
             follower = Constants.createFollower(hardwareMap);
-            Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading());
+            Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading() - 90);
             //Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading());
             follower.setStartingPose(pose);
 
@@ -124,7 +128,7 @@
             if(!turret.getStatus()){
                 turret.setup();
             }
-            turret.resetMotor();
+            //turret.resetMotor();
 
             if(!holonomic.getStatus()){
                 holonomic.start();
@@ -134,16 +138,16 @@
             delay_shoot = delay_fast;
             HardwareClass.bratDelay = delay_brat_fast;
 
-            HardwareClass.redScoreX = RED_X;
-            HardwareClass.redScoreY = RED_Y;
-            HardwareClass.blueScoreX = BLUE_X;
-            HardwareClass.blueScoreY = BLUE_Y;
-
             turret.goToPosition(adjust);
 
             while(opModeIsActive()) {
+                HardwareClass.redScoreX = RED_X;
+                HardwareClass.redScoreY = RED_Y;
+                HardwareClass.blueScoreX = BLUE_X;
+                HardwareClass.blueScoreY = BLUE_Y;
+
                 follower.update();
-                distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),0);
+                distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),goal);
 
                 if(distance < 200){
                     putere = putere_close;
@@ -165,11 +169,6 @@
 
                 switch(mode){
                     case "drive":{
-                        // ---- CONST SPEEEEEED ----
-                        if(gamepad1.dpad_down){
-                            motors.setCoefsMan(20,0,0,1.2);
-                            motors.setRampVelocityC(750);
-                        }
 
                         // ---- SHOOTING CLOSE ----
                         if(gamepad1.right_bumper){
@@ -192,31 +191,40 @@
                         // ---- TURRET ----
 
                         if(gamepad1.y){
-                            adjust = 0;
+                            adjust = (int)((turret_max + turret_min) / 2);
                             target = -1;
-                            turret.goToPosition(adjust);
-                        }
-
-                        if (gamepad1.dpad_right){
-                            target = -1;
-                            adjust += 2;
                             turret.goToPosition(adjust);
                         }
 
                         if (gamepad1.dpad_left){
                             target = -1;
-                            adjust -= 2;
+                            adjust += 40;
                             turret.goToPosition(adjust);
                         }
 
-                        if (gamepad1.x){
+                        if(gamepad1.dpad_down){
+                            turret.resetMotor();
+                            target = -1;
+                        }
+
+                        if(gamepad1.dpad_right){
+                            target = 1;
+                        }
+
+                        if (gamepad1.dpad_up){
                             Pose pose1 = new Pose(72,72,90);
                             follower.setPose(pose1);
                         }
 
-                       if(gamepad1.a){
+                       if(gamepad1.b){
+                           goal = 0;
                            target = 1;
                        }
+
+                        if(gamepad1.x){
+                            goal = 2;
+                            target = 1;
+                        }
 
                        if(target == 1){
                            handleTurret();
@@ -236,7 +244,9 @@
                         break;
                     }
                     case "shoot_fast":{
-                        handleLL();
+                        if(target == 1){
+                            handleLL();
+                        }
 
                         motors.setRampVelocityC(putere);
                         motors.intakeOn();
@@ -289,7 +299,7 @@
             try{
                 if(limelight.checkResults()){
                     double tx = limelight.getXPos();
-                    if(Math.abs(tx) > 3){
+                    if(Math.abs(tx) > 2){
                         adjust -= (int)(tx * 0.4);
                         lastTx = tx;
                     }
@@ -300,8 +310,8 @@
                         adjust -= 5;
                     }
                 }
-                if(adjust < -150) adjust = -150;
-                if(adjust > 200) adjust = 200;
+                if(adjust < turret_min) adjust = turret_min;
+                if(adjust > turret_max) adjust = turret_max;
                 turret.goToPosition(adjust);
 
             }catch (Exception ex){
@@ -315,24 +325,18 @@
             double y = follower.getPose().getY();
             double dx=0,dy=0;
 
-            dx = HardwareClass.redScoreX - x;
-            dy = HardwareClass.redScoreY - y;
-            /*
-            if(target == -1){
-                dx = -72 - x;
-                dy = 0 - y;
-            }
-            if(target == 1) {
+            if(goal == 2) {
+                limelight.setPipeline(0);
                 dx = HardwareClass.blueScoreX - x;
                 dy = HardwareClass.blueScoreY - y;
             }
 
-            if(target == 0) {
+            if(goal == 0) {
+                limelight.setPipeline(4);
                 dx = HardwareClass.redScoreX - x;
                 dy = HardwareClass.redScoreY - y;
             }
-            *
-             */
+
             double goalAngle = Math.atan2(dy, dx);
             double thetaR = follower.getPose().getHeading();
 
@@ -341,10 +345,10 @@
             targetPosition = convertToNewRange(
                     targetAngle,
                     -Math.PI / 2, Math.PI / 2,
-                    -150, 200
+                    turret_min, turret_max
             );
 
-            targetPosition = Math.min(Math.max(targetPosition,-150),200);
+            targetPosition = Math.min(Math.max(targetPosition,turret_min),turret_max);
             adjust = targetPosition;
             turret.goToPosition(targetPosition);
         }

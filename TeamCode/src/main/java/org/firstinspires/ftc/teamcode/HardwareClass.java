@@ -27,10 +27,10 @@ public class HardwareClass {
     public static double startX = 64 ,startY = 0, startAngle=180;//Inch
     public static double redX = 132, redY = 132;
     public static double redScoreX = 135, redScoreY = 135;//65   62
-    public static double blueX = 8, blueY = 8;
+    public static double blueX = 0, blueY = 135;
     public static double blueScoreX = 135, blueScoreY = 9;
 
-    public static int bratDelay = 180,bratDownDelay = 150; // milisecunde
+    public static int bratDelay = 150,bratDownDelay = 150; // milisecunde
 
     public static  double selectTopLOW = 0.94, selectBotLLOW = 0.89,selectBotRLOW =0.93 ;//0.14
 
