@@ -99,7 +99,6 @@
             Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading() - 90);
             //Pose pose = new Pose(144 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading());
             follower.setStartingPose(pose);
-
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
             // ---- System Config ----
@@ -126,7 +125,7 @@
             selectioner.resetServos();
 
             if(!turret.getStatus()){
-                turret.setup();
+                    turret.setup();
             }
             //turret.resetMotor();
 
@@ -375,6 +374,7 @@
 
         static int getRPM(double d) {
             double r = 0.012 * d * d - 1.9 * d + 2070;
+            r = Math.max(Math.min(r,3000),100);
             r = Math.max(Math.min(r,3000),100);
             return (int)r;
         }
