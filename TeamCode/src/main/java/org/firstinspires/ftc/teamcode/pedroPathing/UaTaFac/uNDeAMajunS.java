@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing.UaTaFac;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
@@ -16,7 +15,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.HardwareClass;
 import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
@@ -24,14 +22,13 @@ import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
 import org.firstinspires.ftc.teamcode.Threads.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
-@Autonomous(name = "Sunt Inconjurat De Lei" , group = "Test")
-public class SuntInconjuratDeLei extends OpMode {
+@Autonomous(name = "uNDeAMajunS" , group = "Test")
+public class uNDeAMajunS extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(46.1, 99  ,Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(72, 72  ,Math.toRadians(180)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose scorePose1 = new Pose(66.1,105,Math.toRadians(90)); // scorePose 1 doar cu turreta
     private final Pose pickup1Pose = new Pose(58, 99, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1_3Pose = new Pose(68.1, 117, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
@@ -88,11 +85,6 @@ public class SuntInconjuratDeLei extends OpMode {
         ScorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
-                .addParametricCallback(0,() -> {
-                    startPresiune();
-                    selectioner.resetServos();
-                    turret.goToPosition(-167);
-                })
                 .setGlobalDeceleration(0.7)
                 .build();
 
@@ -239,143 +231,7 @@ public class SuntInconjuratDeLei extends OpMode {
             case 1:
 
                 if(!follower.isBusy()) {
-                    motors.intakeOn();
-                    for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() >= TargetRPM * Treshold){
-                            break;
-                        }
-                    }
-                    stopPresiune();
-                    TargetRPM = 1910;
-                    setPathState(2);
-                }
-                break;
-
-            case 2:
-                if(!follower.isBusy()) {
-                    follower.followPath(GrabFirst,true);
-                    setPathState(3);
-                }
-                break;
-
-            case 3:
-                if(!follower.isBusy()) {
-                    motors.intakeOn();
-                    for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() >= TargetRPM * Treshold){
-                            break;
-                        }
-                    }
-                    stopPresiune();
-                    setPathState(4);
-                }
-                break;
-
-            case 4:
-                if(!follower.isBusy()) {
-                    follower.followPath(GrabFromRack, true);
-                    setPathState(5);
-                }
-                break;
-            case 5:
-                if(!follower.isBusy()) {
-                    if(unload_timer.milliseconds() > 2300){
-                        sleep(400);
-                        setPathState(7);
-                    }
-                }
-                break;
-            case 7:
-                if(!follower.isBusy()) {
-                    follower.followPath(ScoreFromRack,true);
-                    setPathState(8);
-                }
-                break;
-            case 8:
-                if(!follower.isBusy()) {
-                    motors.intakeOn();
-                    for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() >= TargetRPM * Treshold){
-                            break;
-                        }
-                    }
-                    stopPresiune();
-                    setPathState(9);
-                }
-                break;
-            case 9:
-
-                if(!follower.isBusy()) {
-                    follower.followPath(GrabSecond,true);
-                    setPathState(10);
-                }
-                break;
-            case 10:
-                if(!follower.isBusy()) {
-                    startPresiune();
-                    motors.intakeOn();
-                    for(int i = 0; i < REP ; i++){
-                        if(motors.getVelocity() >= TargetRPM * Treshold){
-                            break;
-                        }
-                    }
-                    stopPresiune();
-                    setPathState(11);
-                }
-                break;
-
-            case 11:
-
-                if(!follower.isBusy()) {
-                    follower.followPath(GrabFromRack2, true);
-                    setPathState(12);
-                }
-                break;
-            case 12:
-                if(!follower.isBusy()) {
-                    if(unload_timer.milliseconds() > 1800){
-                        setPathState(14);
-                    }
-                }
-                break;
-            case 14:
-                if(!follower.isBusy()) {
-                    follower.followPath(ScoreFromRack2,true);
-                    setPathState(15);
-                }
-                break;
-            case 15:
-                if(!follower.isBusy()) {
-                    motors.intakeOn();
-                    for(int i = 0; i < REP; i++){
-                        if(motors.getVelocity() >= TargetRPM * Treshold){
-                            break;
-                        }
-                    }
-                    stopPresiune();
-                    setPathState(16);
-                }
-                break;
-            case 16:
-                if(!follower.isBusy()) {
-                    follower.followPath(Park,true);
                     setPathState(-1);
-                }
-                break;
-
-            case 67:
-
-                if(!follower.isBusy()) {
-                    this.sleep(1000);
-                    setPathState(7);
-                }
-                break;
-
-            case 66:
-
-                if(!follower.isBusy()) {
-                    this.sleep(1000);
-                    setPathState(14);
                 }
                 break;
         }
