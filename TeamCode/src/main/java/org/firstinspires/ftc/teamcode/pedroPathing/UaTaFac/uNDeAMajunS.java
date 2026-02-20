@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Threads.Selectioner;
 import org.firstinspires.ftc.teamcode.Threads.Servos;
 import org.firstinspires.ftc.teamcode.Threads.Turret;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
 @Autonomous(name = "uNDeAMajunS" , group = "Test")
@@ -231,6 +232,7 @@ public class uNDeAMajunS extends OpMode {
             case 1:
 
                 if(!follower.isBusy()) {
+                    PoseStorage.autoPose = follower.getPose();
                     setPathState(-1);
                 }
                 break;

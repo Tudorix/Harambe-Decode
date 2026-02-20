@@ -8,6 +8,7 @@
     import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
     import com.qualcomm.robotcore.hardware.DcMotorSimple;
+    import com.qualcomm.robotcore.hardware.Gamepad;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
     import org.firstinspires.ftc.teamcode.HardwareClass;
@@ -24,7 +25,7 @@
     //comment
 
     @Config
-    @TeleOp(name="SistemulOtoman", group = "Solo")
+    @TeleOp(name="TeleOp Rosu", group = "Solo")
     public class SistemulOtoman extends LinearOpMode {
         Servos servos = null;
         HardwareClass hardwareClass = null;
@@ -51,11 +52,11 @@
         double minAngleLL = 0;
 
         // ---- SHOOTER PARAMETERS ----
-        double threshold_far = 0.95; // To Adjust
-        double threshold_close = 0.68; // To Adjust
-        double threshold_mid = 0.8; // To Adjust
+        double threshold_far = 0.85; // To Adjust
+        double threshold_close = 0.73; // To Adjust
+        double threshold_mid = 0.73; // To Adjust
 
-        int kp_far = 120;
+        int kp_far = 70;
         int kp_close = 60;
         int kp = 60;
         private int delay_fast = 100;
@@ -64,15 +65,15 @@
         private int delay_brat_slow = 250;
         private int delay_brat_fast = 200;
 
-        double hood_offset_1 = 0.2;
-        double hood_offset_2 = 0.09;
-        double hood_offset_3 = 0.02;
+        double hood_offset_1 = 0;
+        double hood_offset_2 = 0;
+        double hood_offset_3 = 0;
 
         // ----
 
-        int putere_far = 4000;
-        int putere_close = 2500;
-        int putere_mid = 2800;
+        int putere_far = 3700;
+        int putere_close = 1800;
+        int putere_mid = 2200;
         int putere;
         int putere_tras;
 
@@ -89,23 +90,29 @@
         private TelemetryManager telemetryM;
 
         private double InregisSpeed = 0;
+
+        Gamepad gm1 , gm2;
         int test_case = 1;
         int goal = 0;
+        int modify = 0;
 
         String mode = "drive";
         @Override
         public void runOpMode()  {
             // ---- Follower Init Location ----
             follower = Constants.createFollower(hardwareMap);
-            Pose pose = new Pose(PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY(),PoseStorage.autoPose.getPose().getHeading());
+            Pose pose = new Pose(137 - PoseStorage.autoPose.getX(), PoseStorage.autoPose.getY() + 15,PoseStorage.autoPose.getPose().getHeading());
             follower.setStartingPose(pose);
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+            gm1 = gamepad1;
+            gm2 = gamepad1;
 
             // ---- System Config ----
             servos = Servos.getInstance(hardwareMap , telemetry);
             motors = Motors.getInstance(hardwareMap);
             hardwareClass = HardwareClass.getInstance(hardwareMap);
-            holonomic = Holonomic.getInstance(hardwareMap , gamepad1, gamepad2);
+            holonomic = Holonomic.getInstance(hardwareMap , gm1, gamepad2);
             limelight = Limelight.getInstance(hardwareMap,telemetry);
             selectioner = Selectioner.getInstance(hardwareClass, telemetry);
             turret = Turret.getInstance(hardwareMap,telemetry);
@@ -148,12 +155,12 @@
                 follower.update();
                 distance = limelight.getDistanceOD(follower.getPose().getX(), follower.getPose().getY(),goal);
 
-                if(distance < 200){
+                if(distance < 215){
                     putere = putere_close;
                     threshold = threshold_close;
                     kp = kp_close;
                     putere_tras = putere_close;
-                }else if(distance >= 200 && distance < 280){
+                }else if(distance >= 215 && distance < 280){
                     putere = putere_mid;
                     threshold = threshold_mid;
                     kp = kp_close;
@@ -166,6 +173,7 @@
                 }
 
                 telemetry.addData("Distance: " , distance);
+                telemetry.addData("Turatie: " , motors.getVelocity());
                 telemetry.addData("Pose: " , follower.getPose());
                 telemetry.addData("Putere: " , putere);
                 telemetry.update();
@@ -174,60 +182,53 @@
                     case "drive":{
 
                         // ---- SHOOTING CLOSE ----
-                        if(gamepad2.right_bumper){
+                        if(gm2.right_bumper){
                             motors.setCoefsMan(kp,0,0,1.2);
                             mode = "shoot_fast";
                         }
 
                         // ---- SHOOTING MODE ----
 
-                        if(gamepad2.share){
+                        if(gm2.share){
                             delay_shoot = delay_slow;
                             HardwareClass.bratDelay = delay_brat_slow;
                         }
 
-                        if(gamepad2.options){
+                        if(gm2.options){
                             delay_shoot = delay_fast;
                             HardwareClass.bratDelay = delay_brat_fast;
                         }
 
                         // ---- TURRET ----
 
-                        if(gamepad2.y){
+                        if(gm2.y){
                             adjust = (int)((turret_max + turret_min) / 2);
                             target = -1;
                             turret.goToPosition(adjust);
                         }
 
-                        if (gamepad2.dpad_left){
+                        if (gm2.dpad_left){
                             target = -1;
                             adjust += 40;
                             turret.goToPosition(adjust);
                         }
 
-                        if(gamepad2.dpad_down){
+                        if(gm2.dpad_down){
                             turret.resetMotor();
                             target = -1;
                         }
 
-                        if(gamepad2.dpad_right){
+                        if(gm2.dpad_right){
                             target = 1;
                         }
 
-                        if (gamepad2.left_trigger > 0){
+                        if (gm2.dpad_up){
                             Pose pose1 = new Pose(72,72,90);
                             follower.setPose(pose1);
                         }
 
-                       if(gamepad2.b){
-                           goal = 0;
-                           target = 1;
-                       }
-
-                        if(gamepad2.x){
-                            goal = 2;
-                            target = 1;
-                        }
+                        if(gm2.x) modify += 2;
+                        if(gm2.b) modify -= 2;
 
                        if(target == 1){
                            handleTurret();
@@ -235,10 +236,10 @@
 
 
                         //----- INTAKE ------
-                        if(gamepad1.right_trigger > 0){
+                        if(gm1.right_trigger > 0){
                             motors.intakeOn();
                         }
-                        else if(gamepad1.left_trigger > 0){
+                        else if(gm1.left_trigger > 0){
                             motors.intakeReverse();
                         }else{
                             motors.intakeOff();
@@ -268,23 +269,28 @@
                             mode = "drive";
                         }
 
-                        if (gamepad1.dpad_right){
+                        if (gm2.dpad_right){
                             target = -1;
                             adjust += 2;
                             turret.goToPosition(adjust);
                         }
 
-                        if (gamepad1.dpad_left){
+                        if (gm2.dpad_left){
                             target = -1;
                             adjust -= 2;
                             turret.goToPosition(adjust);
                         }
 
-                        if(gamepad1.dpad_up){
+                        if(gm2.dpad_up){
                             target = 1;
                         }
 
-                        if(gamepad1.right_trigger > 0){
+                        if(gm2.right_trigger > 0){
+                            if(threshold <= 0.8){
+                                shoot_short();
+                            }else{
+                                shoot_long();
+                            }
                             motors.setCoefsMan(20,0,0,1.2);
                             motors.setRampVelocityC(1000);
                             selectioner.resetServos();
@@ -352,7 +358,7 @@
             );
 
             targetPosition = Math.min(Math.max(targetPosition,turret_min),turret_max);
-            adjust = targetPosition;
+            adjust = targetPosition + modify;
             turret.goToPosition(targetPosition);
         }
 

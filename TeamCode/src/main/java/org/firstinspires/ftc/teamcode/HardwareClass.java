@@ -34,7 +34,7 @@ public class HardwareClass {
 
     public static  double selectTopLOW = 0.96, selectBotLLOW = 0.91,selectBotRLOW =0.95 ;//0.14
 
-    public static  double selectTopREST = 0.68, selectBotLREST = 0.72,selectBotRREST =0.77 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
+    public static  double selectTopREST = 0.81, selectBotLREST = 0.74,selectBotRREST =0.79 ;//0.35 //Intermediate to make sure it reads color correctly         calibrate!
 
     public static  double selectTopHIGH = 0.47, selectBotLHIGH = 0.42,selectBotRHIGH = 0.47;//0.57
 

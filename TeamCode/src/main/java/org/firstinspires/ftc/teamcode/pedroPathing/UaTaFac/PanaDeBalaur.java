@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.pedroPathing.UaTaFac;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
@@ -16,7 +15,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.HardwareClass;
 import org.firstinspires.ftc.teamcode.Threads.Limelight;
 import org.firstinspires.ftc.teamcode.Threads.Motors;
@@ -27,8 +25,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.PoseStorage;
 
 
-@Autonomous(name = "Sunt Inconjurat De Lei" , group = "Test")
-public class SuntInconjuratDeLei extends OpMode {
+@Autonomous(name = "PanaDeBalaur" , group = "Test")
+public class PanaDeBalaur extends OpMode {
     int target=0;
     private final Pose startPose = new Pose(14.8, 118.7, 2.26); // Start Pose of our robot.
     private final Pose scorePose = new Pose(46.1, 99  ,Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
@@ -40,9 +38,9 @@ public class SuntInconjuratDeLei extends OpMode {
     private final Pose pickup2_3Pose = new Pose(85.5,122,Math.toRadians(90));
     private final Pose pickup2_3Pose1 = new Pose(82,123,Math.toRadians(30));
     private final Pose parkPose = new Pose(40.7, 91, 2.116); // Park // Park
-    private final Pose unloadPose = new Pose(82.8,132.7,Math.toRadians(116));
-    private final Pose unloadPose2 = new Pose(82.8,132.7,Math.toRadians(116));
-    private final Pose aux = new Pose (81 , 105  , Math.toRadians(120));
+    private final Pose unloadPose = new Pose(82.7,132,Math.toRadians(120));
+    private final Pose unloadPose2 = new Pose(83.2,132,Math.toRadians(120));
+    private final Pose aux = new Pose (82 , 105  , Math.toRadians(120));
 
     DcMotor FR , FL , BR , BL;
 
@@ -71,13 +69,13 @@ public class SuntInconjuratDeLei extends OpMode {
     private PathChain unload1,unload2;
     private PathChain ScorePreload , GrabFirst, GrabFromRack, ScoreFromRack, GrabSecond, ScoreFromRack2, Prep,GrabFromRack2;
 
-    double Treshold = 0.76;
+    double Treshold = 0.79;
     int REP = 3000;
     double TargetRPM = 1650;
 
     int High_P = 70 , Low_P = 20;
 
-    int delay_shoot = 230;
+    int delay_shoot = 200;
 
     ElapsedTime unload_timer = null;
 
@@ -118,7 +116,7 @@ public class SuntInconjuratDeLei extends OpMode {
                     startPresiune();
                 })
                 .addParametricCallback(0.9,() -> {
-                    turret.goToPosition(-83);
+                    turret.goToPosition(-78);
                     motors.intakeOff();
                     PoseStorage.autoPose = follower.getPose();
                 })
@@ -139,7 +137,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 })
                 .addParametricCallback(0.6,() -> {
                     motors.intakeReverse();
-                    turret.goToPosition(-65);
+                    turret.goToPosition(-70);
                     PoseStorage.autoPose = follower.getPose();
                 })
                 .setGlobalDeceleration(0.5)
@@ -204,22 +202,23 @@ public class SuntInconjuratDeLei extends OpMode {
                 })
                 .addParametricCallback(0.4,() -> {
                     motors.intakeReverse();
-                    turret.goToPosition(-83);
+                    turret.goToPosition(-77);
                     PoseStorage.autoPose = follower.getPose();
                 })
                 .setGlobalDeceleration(0.5)
                 .build();
 
         ScoreFromRack2 = follower.pathBuilder()
-                .addPath(new BezierLine(unloadPose2, parkPose))
-                .setLinearHeadingInterpolation(unloadPose2.getHeading(), parkPose.getHeading())
+                .addPath(new BezierLine(unloadPose2, scorePose1))
+                .setLinearHeadingInterpolation(unloadPose2.getHeading(), scorePose1.getHeading())
                 .addParametricCallback(0,() -> {
                     motors.intakeReverse();
                     startPresiune();
                 })
                 .addParametricCallback(0.5,() -> {
+                    TargetRPM = 1850;
                     motors.intakeReverse();
-                    turret.goToPosition(-187);
+                    turret.goToPosition(-72);
                     PoseStorage.autoPose = follower.getPose();
                 })
                 .setGlobalDeceleration(0.5)
@@ -298,8 +297,8 @@ public class SuntInconjuratDeLei extends OpMode {
                 break;
             case 5:
                 if(!follower.isBusy()) {
-                    if(unload_timer.milliseconds() > 3500){
-                        sleep(1000);
+                    if(unload_timer.milliseconds() > 1200){
+                        sleep(770);
                         setPathState(7);
                     }
                 }
@@ -352,7 +351,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 break;
             case 12:
                 if(!follower.isBusy()) {
-                    if(unload_timer.milliseconds() > 1000){
+                    if(unload_timer.milliseconds() > 1100){
                         setPathState(14);
                     }
                 }
@@ -379,13 +378,13 @@ public class SuntInconjuratDeLei extends OpMode {
             case 16:
 
                 if(!follower.isBusy()) {
-                    PoseStorage.autoPose = follower.getPose();
-                    setPathState(-1);
+                    follower.followPath(GrabFromRack2,true);
+                    setPathState(17);
                 }
                 break;
             case 17:
                 if(!follower.isBusy()) {
-                    if(unload_timer.milliseconds() > 900){
+                    if(unload_timer.milliseconds() > 1050){
                         setPathState(18);
                     }
                 }
@@ -400,7 +399,7 @@ public class SuntInconjuratDeLei extends OpMode {
                 if(!follower.isBusy()) {
                     PoseStorage.autoPose = follower.getPose();
                     motors.intakeOn();
-                    for(int i = 0; i < REP; i++){
+                    for(int i = 0; i < REP && opmodeTimer.getElapsedTimeSeconds() < 29.5; i++){
                         if(motors.getVelocity() >= TargetRPM * Treshold){
                             break;
                         }
@@ -460,6 +459,7 @@ public class SuntInconjuratDeLei extends OpMode {
         hardwareClass = HardwareClass.getInstance(hardwareMap);
         servos = Servos.getInstance(hardwareMap,telemetry);
         motors = Motors.getInstance(hardwareMap);
+        HardwareClass.bratDelay = 190;
         limelight = Limelight.getInstance(hardwareMap,telemetry);
         limelight.setup();
         limelight.setPipeline(1);

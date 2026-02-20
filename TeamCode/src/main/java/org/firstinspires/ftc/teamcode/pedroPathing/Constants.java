@@ -19,9 +19,9 @@ public class Constants {
             .forwardZeroPowerAcceleration(-33.89)
             .lateralZeroPowerAcceleration(-75.35)//-47
             .translationalPIDFCoefficients(new PIDFCoefficients(
-                    0.015,
+                    0.05,
                     0,
-                    0.015,
+                    0.0001,
                     0.008
             ))
             .translationalPIDFSwitch(4)

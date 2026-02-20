@@ -15,13 +15,16 @@ import org.firstinspires.ftc.teamcode.Threads.Motors;
 //requires motor class!!!!!
 //I will change the tuner in future update!!
 
-//@Config
+@Config
 @TeleOp(name="PIDF Tunner", group = "Solo")
 public class PIDFTunner extends LinearOpMode {
     Servos servos = null;
     HardwareClass hardwareClass = null;
     Selectioner selectioner = null;
     Motors motors = null;
+
+    public static int targetSpeed = 1000;
+    public static double treshold = 0.73;
 
     private TelemetryManager telemetryM;
     @Override
@@ -38,7 +41,7 @@ public class PIDFTunner extends LinearOpMode {
         waitForStart();
         motors.setRampVelocityC(1000);
          ElapsedTime delay = new ElapsedTime();
-        double coefs[] = { 35, 0 , 0 , 2.5 };
+        double coefs[] = { 60, 0 , 0 , 2.5 };
         int target = 0;
         double size = 0.1;
         double targetVelocity = 3000;
@@ -61,11 +64,11 @@ public class PIDFTunner extends LinearOpMode {
 
             if(gamepad1.right_bumper) {
                 motors.setCoefsMan(60, 0, 0, 1.2);
-                motors.setRampVelocityC((int)targetVelocity);
+                motors.setRampVelocityC((int)targetSpeed);
                 shooting = true;
             }
 
-            if (motors.getVelocity() > (int)(0.73 *targetVelocity) && shooting) {
+            if (motors.getVelocity() > (int)(treshold * targetSpeed) && shooting) {
                 motors.intakeOn();
                     shoot_short();
                 sleep(200);

@@ -88,6 +88,7 @@ public class BuzunarulDeLaSpate extends OpMode {
                     turret.goToPosition(0);
                     selectioner.resetServos();
                 })
+                .setGlobalDeceleration(0.7)
                 .build();
 
         Pickup1 = follower.pathBuilder()
@@ -107,6 +108,7 @@ public class BuzunarulDeLaSpate extends OpMode {
                 .addParametricCallback(0.3 , () -> {
                     motors.intakeReverse();
                 })
+                .setGlobalDeceleration(0.7)
                 .build();
 
         Human = follower.pathBuilder()
@@ -136,11 +138,13 @@ public class BuzunarulDeLaSpate extends OpMode {
                 .addParametricCallback(0.5 , () -> {
                     motors.intakeReverse();
                 })
+                .setGlobalDeceleration(0.7)
                 .build();
 
         park = follower.pathBuilder()
                 .addPath(new BezierLine(scorePoseError, parkPose))
                 .setLinearHeadingInterpolation(scorePoseError.getHeading(), parkPose.getHeading())
+                .setGlobalDeceleration(0.7)
                 .build();
 
     }
@@ -206,6 +210,12 @@ public class BuzunarulDeLaSpate extends OpMode {
                         }
                     }
                     stopPresiune();
+                    setPathState(6);
+                }
+                break;
+            case 6:
+                if(!follower.isBusy()) {
+                    PoseStorage.autoPose = follower.getPose();
                     setPathState(-1);
                 }
                 break;
@@ -268,6 +278,7 @@ public class BuzunarulDeLaSpate extends OpMode {
     }
 
     public void stopPresiune(){
+        PoseStorage.autoPose = follower.getPose();
         shoot_long();
         motors.setCoefsMan(Low_P,0,0,1.2);
         motors.setRampVelocityC((int)(1000));
